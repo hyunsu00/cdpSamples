@@ -31,4 +31,6 @@
 *.out
 *.app
 
-dist/
+./dist/
+/cdp-pipe/build/
+/cdp-port/build/
