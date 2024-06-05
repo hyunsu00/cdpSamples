@@ -34,3 +34,4 @@
 ./dist/
 /cdp-pipe/build/
 /cdp-port/build/
+/cdp-port/chrome/

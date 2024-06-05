@@ -51,6 +51,16 @@
         "map": "cpp",
         "optional": "cpp",
         "valarray": "cpp",
-        "json.hpp": "c"
+        "json.hpp": "c",
+        "ctime": "cpp",
+        "any": "cpp",
+        "chrono": "cpp",
+        "codecvt": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp",
+        "ranges": "cpp",
+        "cinttypes": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp"
     }
 }
