@@ -31,7 +31,8 @@
 *.out
 *.app
 
-./dist/
+
 /cdp-pipe/build/
 /cdp-port/build/
 /cdp-port/chrome/
+/cdp-port/node/node_modules/

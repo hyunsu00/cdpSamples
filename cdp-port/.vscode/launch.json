@@ -5,7 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) 시작",
+            "name": "cdp-port(node.js) 시작",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node/app01.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "cdp-port(gdb) 시작",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/cdp-port",

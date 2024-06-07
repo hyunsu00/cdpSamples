@@ -221,7 +221,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         frame.push_back(0x81); // FIN 비트 설정 및 텍스트 프레임
         frame.push_back(navigateRequest.size()); // 페이로드 길이
         frame.insert(frame.end(), navigateRequest.begin(), navigateRequest.end()); // 페이로드 추가
-        ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
+        ret = send(sock, &frame[0], frame.size(), 0);
         std::cout << "[request]: \n" << navigateRequest << std::endl;
 
         std::string navigateResponse;
@@ -233,6 +233,8 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
                 std::cout << "Error reading server response" << std::endl;
                 close(sock);
                 return;
+            } else if (bytesReceived == 0) {
+                continue;
             }
             totalReceived += bytesReceived;
             buffer[bytesReceived] = '\0';
