@@ -115,6 +115,35 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     return jBody["webSocketDebuggerUrl"];
 }
 
+std::string getWebSocketKey() 
+{
+    return "dGhlIHNhbXBsZSBub25jZQ==";
+}
+
+void send_websocket_frame(int sock, const char* message) {
+    unsigned char frame[10];
+    size_t length = strlen(message);
+    frame[0] = 0x81;
+
+    if (length <= 125) {
+        frame[1] = (unsigned char)length;
+        write(sock, frame, 2);
+    } else if (length <= 65535) {
+        frame[1] = 126;
+        frame[2] = (length >> 8) & 0xFF;
+        frame[3] = length & 0xFF;
+        write(sock, frame, 4);
+    } else {
+        frame[1] = 127;
+        for (int i = 0; i < 8; ++i) {
+            frame[2 + i] = (length >> (8 * (7 - i))) & 0xFF;
+        }
+        write(sock, frame, 10);
+    }
+
+    write(sock, message, length);
+}
+
 void takeScreenshot(const std::string& webSocketDebuggerUrl) 
 {
     std::regex ip_regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
@@ -182,7 +211,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
     handshakeRequest += "Upgrade: websocket\r\n";
     handshakeRequest += "Connection: Upgrade\r\n";
     handshakeRequest += "Sec-WebSocket-Version: 13\r\n";
-    handshakeRequest += "Sec-WebSocket-Key: SGVsbG8gV29ybGQh\r\n";
+    handshakeRequest += std::string("Sec-WebSocket-Key: ") + getWebSocketKey() + "\r\n";
     handshakeRequest += "\r\n";
 
     int ret = send(sock, handshakeRequest.c_str(), handshakeRequest.size(), 0);
@@ -245,6 +274,8 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             }
         }
         std::cout << "[response]: \n" << navigateResponse << std::endl;
+
+
     }
 
     {

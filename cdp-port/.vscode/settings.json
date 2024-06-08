@@ -61,6 +61,19 @@
         "streambuf": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.ipp": "cpp",
+        "csignal": "cpp",
+        "complex": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "set": "cpp",
+        "future": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp"
     }
 }

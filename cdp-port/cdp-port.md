@@ -11,3 +11,6 @@ $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --
 
 PS > "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
 ```
+sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install libboost-all-dev
+
