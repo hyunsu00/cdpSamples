@@ -14,10 +14,10 @@
             ]
         },
         {
-            "name": "cdp-port(gdb) 시작",
+            "name": "boost-beast(gdb) 시작",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/cdp-port",
+            "program": "${workspaceFolder}/build/boost-beast",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",

@@ -1,22 +1,55 @@
 #include <iostream>
 #include <string>
+#include <regex>
+#include <fstream>
+#include <vector>
 #include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <fstream>
-#include <vector>
 #include "nlohmann/json.hpp"
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
 namespace http = beast::http;       // from <boost/beast/http.hpp>
-namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;        // from <boost/asio.hpp>
+namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 using tcp = boost::asio::ip::tcp;   // from <boost/asio/ip/tcp.hpp>
 using json = nlohmann::json;
 
+std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222)
+{
+    auto const host = std::string(addr);
+    auto const port_str = std::to_string(port);
+    auto const target = "/json/version";
+    int version = 11;
+
+    net::io_context ioc;
+
+    tcp::resolver resolver{ioc};
+    tcp::socket socket{ioc};
+
+    auto const results = resolver.resolve(host, port_str.c_str());
+    net::connect(socket, results);
+
+    http::request<http::string_body> request{http::verb::get, target, version};
+    request.set(http::field::host, host);
+    request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    http::write(socket, request);
+
+    beast::flat_buffer buffer;
+    http::response<http::dynamic_body> response;
+    http::read(socket, buffer, response);
+
+    auto const responseBody = boost::beast::buffers_to_string(response.body().data());
+    auto const message = json::parse(responseBody);
+    return message["webSocketDebuggerUrl"];
+}
+
 // Function to decode base64 string to binary data
-std::vector<unsigned char> base64Decode(const std::string& encoded_string) {
+std::vector<unsigned char> base64Decode(const std::string& encoded_string) 
+{
     static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                             "abcdefghijklmnopqrstuvwxyz"
                                             "0123456789+/";
@@ -64,150 +97,169 @@ std::vector<unsigned char> base64Decode(const std::string& encoded_string) {
     return ret;
 }
 
-// Function to save screenshot to file
-void saveScreenshot(const std::string& base64Data, const std::string& filename) {
-    std::vector<unsigned char> decodedData = base64Decode(base64Data);
-    std::ofstream file(filename, std::ios::binary);
-    file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
-    file.close();
+void takeScreenshot(const std::string& webSocketDebuggerUrl) 
+{
+    std::regex ip_regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
+    std::regex port_regex(":(\\d+)");
+    std::regex path_regex("(/devtools/browser/[a-z0-9\\-]+)");
+    std::smatch match;
+
+    std::string addr = "127.0.0.1";
+    if (std::regex_search(webSocketDebuggerUrl, match, ip_regex) && match.size() > 1) {
+        addr = match.str(1);
+        std::cout << "IP: " << addr << std::endl;
+    } else {
+        std::cout << "No valid IP found in string" << std::endl;
+        return;
+    }
+
+    uint16_t port = 9222;
+    if (std::regex_search(webSocketDebuggerUrl, match, port_regex) && match.size() > 1) {
+        port = static_cast<uint16_t>(std::stoi(match.str(1)));
+        std::cout << "Port: " << port << std::endl;
+    } else {
+        std::cout << "No valid port found in string" << std::endl;
+        return;
+    }
+
+    std::string path;
+    if (std::regex_search(webSocketDebuggerUrl, match, path_regex) && match.size() > 1) {
+        path = match.str(1);
+        std::cout << "Path: " << path << std::endl;
+    } else {
+        std::cout << "No valid path found in string" << std::endl;
+        return;
+    }
+
+    // io_context는 모든 I/O에 필요합니다.
+    net::io_context ioc;
+
+    // 이 객체는 I/O를 수행합니다.
+    tcp::resolver resolver{ioc};
+    websocket::stream<tcp::socket> ws{ioc};
+
+    // 도메인 이름을 찾는다.
+    auto const results = resolver.resolve(addr, std::to_string(port));
+
+    // 조회를 통해 얻은 IP 주소로 연결합니다.
+    auto ep = net::connect(ws.next_layer(), results);
+
+    // Host 문자열을 업데이트합니다. 
+    // 이는 WebSocket 핸드셰이크 중에 호스트 HTTP 헤더 값을 제공합니다.
+    // See https://tools.ietf.org/html/rfc7230#section-5.4
+    std::string host = addr + ":" + std::to_string(port);
+
+    // Perform the websocket handshake
+    ws.handshake(host, path);
+
+    json rmessage;
+    {
+        // Target.getTargets 호출
+        // 사용가능한 모든 대상 리스트 반환 
+        std::string message = R"({
+            "id": 1,
+            "method": "Target.getTargets"
+        })";
+        ws.write(net::buffer(std::string(message)));
+
+        // 들어오는 메시지를 보관할 버퍼
+        beast::flat_buffer buffer;
+
+        // 버퍼로 메시지 읽기
+        ws.read(buffer);
+
+        // 버퍼를 문자열로 변환
+        std::string response = beast::buffers_to_string(buffer.data());
+        rmessage = json::parse(response);
+    }
+    
+    {
+        std::cout << rmessage << std::endl;
+        // Target.attachToTarget 호출
+        // 대상 타겟 중 페이지 타겟을 찾아서 첫 번째 페이지 타겟에 대해 attachToTarget 호출
+        std::string message = R"({
+            "id": 2,
+            "method": "Target.attachToTarget",
+            "params": {
+                "targetId": "{targetInfo.targetId}",
+                "flatten": true
+            }
+        })";
+
+        size_t startPos = message.find("{targetInfo.targetId}");
+        if(startPos != std::string::npos) {
+            json message_result = rmessage["result"];
+            json target_info;
+            for (auto& element : message_result["targetInfos"]) {
+                if (element["type"] == "page") {
+                    target_info = element;
+                    break;
+                }
+            }
+            message.replace(startPos, strlen("{targetInfo.targetId}"), target_info["targetId"].get<std::string>());
+        }
+        ws.write(net::buffer(std::string(message)));
+
+        // 들어오는 메시지를 보관할 버퍼
+        beast::flat_buffer buffer;
+
+        // 버퍼로 메시지 읽기
+        ws.read(buffer); buffer.consume(buffer.size());
+        ws.read(buffer);
+
+        // 버퍼를 문자열로 변환
+        std::string response = beast::buffers_to_string(buffer.data());
+        rmessage = json::parse(response);
+    }
+
+    {
+        std::cout << rmessage << std::endl;
+
+        // Page.captureScreenshot 호출
+        std::string message = R"({
+            "sessionId": "{message.result.sessionId}",
+            "id": 3,
+            "method": "Page.captureScreenshot",
+            "params": {
+                "format": "png",
+                "quality": 100,
+                "fromSurface": true
+            }
+        })";
+
+        size_t startPos = message.find("{message.result.sessionId}");
+        if(startPos != std::string::npos) {
+            message.replace(startPos, strlen("{message.result.sessionId}"), rmessage["result"]["sessionId"].get<std::string>());
+        }
+        ws.write(net::buffer(std::string(message)));
+
+        // 들어오는 메시지를 보관할 버퍼
+        beast::flat_buffer buffer;
+
+        // 버퍼로 메시지 읽기
+        ws.read(buffer);
+
+        // 버퍼를 문자열로 변환
+        std::string response = beast::buffers_to_string(buffer.data());
+        rmessage = json::parse(response);
+        std::string screenshotData = rmessage["result"]["data"].get<std::string>();
+        {
+            std::vector<unsigned char> decodedData = base64Decode(screenshotData);
+            std::ofstream file("screenshot.png", std::ios::binary);
+            file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
+            file.close();
+        }
+    }
+    // WebSocket 연결을 닫습니다.
+    ws.close(websocket::close_code::normal);
 }
 
-int main() {
+int main() 
+{
     try {
-        // The io_context is required for all I/O
-        net::io_context ioc;
-
-        // These objects perform our I/O
-        tcp::resolver resolver{ioc};
-        websocket::stream<tcp::socket> ws{ioc};
-
-        // Look up the domain name
-        auto const results = resolver.resolve("localhost", "9222");
-
-        // Make the connection on the IP address we get from a lookup
-        auto ep = net::connect(ws.next_layer(), results);
-
-        // Update the host_ string. This will provide the value of the
-        // Host HTTP header during the WebSocket handshake.
-        // See https://tools.ietf.org/html/rfc7230#section-5.4
-        std::string host = "localhost:9222";
-
-        // Perform the websocket handshake
-        ws.handshake(host, "/devtools/browser/5ec78c48-32ef-4d7b-94f9-ac38b997494c");
-
-        json rmessage;
-        {
-            // Target.getTargets 호출
-            // 사용가능한 모든 대상 리스트 반환 
-            std::string message = R"({
-                "id": 1,
-                "method": "Target.getTargets"
-            })";
-            ws.write(net::buffer(std::string(message)));
-
-            // Buffer to hold the incoming message
-            beast::flat_buffer buffer;
-
-            // Read a message into our buffer
-            ws.read(buffer);
-
-            // Convert the buffer to a string
-            std::string response = beast::buffers_to_string(buffer.data());
-            rmessage = json::parse(response);
-        }
-        
-        {
-            std::cout << rmessage << std::endl;
-            // Target.attachToTarget 호출
-            // 대상 타겟 중 페이지 타겟을 찾아서 첫 번째 페이지 타겟에 대해 attachToTarget 호출
-            std::string message = R"({
-                "id": 2,
-                "method": "Target.attachToTarget",
-                "params": {
-                    "targetId": "{targetInfo.targetId}",
-                    "flatten": true
-                }
-            })";
-
-            size_t startPos = message.find("{targetInfo.targetId}");
-            if(startPos != std::string::npos) {
-                json message_result = rmessage["result"];
-                json target_info;
-                for (auto& element : message_result["targetInfos"]) {
-                    if (element["type"] == "page") {
-                        target_info = element;
-                        break;
-                    }
-                }
-                message.replace(startPos, strlen("{targetInfo.targetId}"), target_info["targetId"].get<std::string>());
-            }
-            std::size_t bytesWrite = ws.write(net::buffer(std::string(message)));
-
-            // Buffer to hold the incoming message
-            beast::flat_buffer buffer;
-
-            // Read a message into our buffer
-            ws.read(buffer); buffer.clear();
-            ws.read(buffer);
-
-            // Convert the buffer to a string
-            std::string response = beast::buffers_to_string(buffer.data());
-            rmessage = json::parse(response);
-        }
-
-        {
-            std::cout << rmessage << std::endl;
-
-            // Page.captureScreenshot 호출
-            std::string message = R"({
-                "sessionId": "{message.result.sessionId}",
-                "id": 3,
-                "method": "Page.captureScreenshot",
-                "params": {
-                    "format": "png",
-                    "quality": 100,
-                    "fromSurface": true
-                }
-            })";
-
-            size_t startPos = message.find("{message.result.sessionId}");
-            if(startPos != std::string::npos) {
-                message.replace(startPos, strlen("{message.result.sessionId}"), rmessage["result"]["sessionId"].get<std::string>());
-            }
-            ws.write(net::buffer(std::string(message)));
-
-            // Buffer to hold the incoming message
-            beast::flat_buffer buffer;
-
-            // Read a message into our buffer
-            ws.read(buffer);
-
-            // Convert the buffer to a string
-            std::string response = beast::buffers_to_string(buffer.data());
-            rmessage = json::parse(response);
-            std::string screenshotData = rmessage["result"]["data"].get<std::string>();
-            saveScreenshot(screenshotData, "screenshot.png");
-        }
-        
-
-        // Parse the JSON response
-        // Json::CharReaderBuilder reader;
-        // Json::Value jsonResponse;
-        // std::string errs;
-        // std::istringstream s(response);
-
-        // if (Json::parseFromStream(reader, s, &jsonResponse, &errs)) {
-        //     if (jsonResponse["id"].asInt() == 2) {
-        //         std::string screenshotData = jsonResponse["result"]["data"].asString();
-        //         saveScreenshot(screenshotData, "screenshot.png");
-        //         std::cout << "Screenshot saved successfully." << std::endl;
-        //     } else {
-        //         std::cerr << "Failed to take screenshot." << std::endl;
-        //     }
-        // }
-
-        // Close the WebSocket connection
-        ws.close(websocket::close_code::normal);
+        std::string webSocketDebuggerUrl = getWebSocketDebuggerUrl();
+        std::cout << "webSocketDebuggerUrl : " << webSocketDebuggerUrl << std::endl;
+        takeScreenshot(webSocketDebuggerUrl);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
