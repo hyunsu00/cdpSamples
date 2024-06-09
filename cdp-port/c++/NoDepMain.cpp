@@ -5,7 +5,10 @@
 #include <iostream>
 #include <regex>
 #include <fstream>
+#include <functional>
 #include "nlohmann/json.hpp"
+#include "common/cdp_port_util.h"
+#include "websocket-parser-1.0.2/websocket_parser.h"
 using json = nlohmann::json;
 
 std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222) 
@@ -31,10 +34,10 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
         return empty;
     }
 
-    std::string request = "GET /json/version HTTP/1.1\r\nHost: localhost\r\n\r\n";
-    size_t startPos = request.find("localhost");
+    std::string request = "GET /json/version HTTP/1.1\r\nHost: ${localhost}\r\n\r\n";
+    size_t startPos = request.find("${localhost}");
     if(startPos != std::string::npos) {
-        request.replace(startPos, strlen("localhost"), std::string(addr) + std::string(":") + std::to_string(port));
+        request.replace(startPos, strlen("${localhost}"), std::string(addr) + std::string(":") + std::to_string(port));
     }
     send(sock, request.c_str(), request.size(), 0);
     std::cout << "[request]: \n" << request << std::endl;
@@ -42,39 +45,7 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     std::string response;
     const int MAX_BUFFER_SIZE = 4096;
     char buffer[MAX_BUFFER_SIZE] = {0, };
-#if 0    
-    int totalReceived = 0, bytesReceived = 0;
-    int contentLength = -1;
-    while ((bytesReceived = recv(sock, buffer, MAX_BUFFER_SIZE - 1, 0)) > 0) {
-        totalReceived += bytesReceived;
-        buffer[bytesReceived] = '\0';
-        response += buffer;
 
-        if (contentLength == -1) {
-            char* headerEnd = strstr(buffer, "\r\n\r\n");
-            if (headerEnd) {
-                char* contentLengthStr = strstr(buffer, "Content-Length:");
-                if (contentLengthStr) {
-                    sscanf(contentLengthStr, "Content-Length:%d", &contentLength);
-                }
-                int headerLength = headerEnd - buffer + 4;
-                contentLength += headerLength;
-            }
-        }
-
-        if (totalReceived >= contentLength) {
-            break;
-        }
-
-        memset(buffer, 0, MAX_BUFFER_SIZE);
-    }
-
-    if (bytesReceived < 0) {
-        std::cout << "Error reading server response" << std::endl;
-        close(sock);
-        return empty;
-    }
-#else
     int totalReceived = 0, bytesReceived = 0;
     while (true) {
         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
@@ -95,16 +66,15 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
             break;
         }
     }
-#endif
-    std::cout << "[response]: \n" << response << std::endl;
+    std::cout << "[http][response] :\n" << response << std::endl;
 
     // body 영역 추출
     size_t pos = response.find("\r\n\r\n");
-    json jBody;
+    json message;
     if (pos != std::string::npos) {
-        std::string body = response.substr(pos + 4);
-        std::cout << "[Body]: \n" << body << std::endl;
-        jBody = json::parse(body);
+        std::string responseBody = response.substr(pos + 4);
+        message = json::parse(responseBody);
+        std::cout << "[http][response.body()] :\n" << message.dump(4) << std::endl;
     } else {
         std::cout << "No body found in the response" << std::endl;
         return empty;
@@ -112,65 +82,7 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     
     close(sock);
 
-    return jBody["webSocketDebuggerUrl"];
-}
-
-void write_frame(int socket_fd, const char* payload) {
-
-    struct frame_header {
-        uint64_t len;
-        uint32_t key;
-        uint8_t op;
-        uint8_t fin  : 1;
-        uint8_t mask : 1;
-        uint8_t rsv1 : 1;
-        uint8_t rsv2 : 1;
-        uint8_t rsv3 : 1;
-    };
-    struct frame_header header;
-    header.len = strlen(payload);  // 페이로드의 길이
-    header.key = 0;  // 키는 필요에 따라 설정
-    header.op = 1;  // 텍스트 프레임
-    header.fin = 1;  // 마지막 프레임
-    header.mask = 0;  // 클라이언트에서 서버로 보낼 때만 마스킹
-    header.rsv1 = 0;
-    header.rsv2 = 0;
-    header.rsv3 = 0;
-
-    // 헤더를 소켓에 쓰기
-    send(socket_fd, &header, sizeof(struct frame_header), 0);
-
-    // 페이로드를 소켓에 쓰기
-    send(socket_fd, payload, header.len, 0);
-}
-
-std::string getWebSocketKey() 
-{
-    return "dGhlIHNhbXBsZSBub25jZQ==";
-}
-
-void send_websocket_frame(int sock, const char* message) {
-    unsigned char frame[10];
-    size_t length = strlen(message);
-    frame[0] = 0x81;
-
-    if (length <= 125) {
-        frame[1] = (unsigned char)length;
-        write(sock, frame, 2);
-    } else if (length <= 65535) {
-        frame[1] = 126;
-        frame[2] = (length >> 8) & 0xFF;
-        frame[3] = length & 0xFF;
-        write(sock, frame, 4);
-    } else {
-        frame[1] = 127;
-        for (int i = 0; i < 8; ++i) {
-            frame[2 + i] = (length >> (8 * (7 - i))) & 0xFF;
-        }
-        write(sock, frame, 10);
-    }
-
-    write(sock, message, length);
+    return message["webSocketDebuggerUrl"];
 }
 
 void takeScreenshot(const std::string& webSocketDebuggerUrl) 
@@ -240,7 +152,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
     handshakeRequest += "Upgrade: websocket\r\n";
     handshakeRequest += "Connection: Upgrade\r\n";
     handshakeRequest += "Sec-WebSocket-Version: 13\r\n";
-    handshakeRequest += std::string("Sec-WebSocket-Key: ") + getWebSocketKey() + "\r\n";
+    handshakeRequest += "Sec-WebSocket-Key: SGVsbG8gV29ybGQh\r\n";
     handshakeRequest += "\r\n";
 
     int ret = send(sock, handshakeRequest.c_str(), handshakeRequest.size(), 0);
@@ -273,77 +185,201 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
     }
     std::cout << "[response]: \n" << response << std::endl;
 
+    json rmessage;
     {
-        std::string navigateRequest = R"({"id":1,"method":"Page.navigate","params":{"url":"https://www.naver.com/"}})";
-        std::vector<char> frame;
-        frame.push_back(0x81); // FIN 비트 설정 및 텍스트 프레임
-        frame.push_back(navigateRequest.size()); // 페이로드 길이
-        frame.insert(frame.end(), navigateRequest.begin(), navigateRequest.end()); // 페이로드 추가
-        ret = send(sock, &frame[0], frame.size(), 0);
-        std::cout << "[request]: \n" << navigateRequest << std::endl;
-
-        std::string navigateResponse;
-        totalReceived = bytesReceived = 0;
-        while (true) {
-            memset(buffer, 0, MAX_BUFFER_SIZE);
-            bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
-            if (bytesReceived < 0) {
-                std::cout << "Error reading server response" << std::endl;
-                close(sock);
-                return;
-            } else if (bytesReceived == 0) {
-                continue;
-            }
-            totalReceived += bytesReceived;
-            buffer[bytesReceived] = '\0';
-            navigateResponse += buffer;
-            if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
-                // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
-                break;
-            }
-        }
-        std::cout << "[response]: \n" << navigateResponse << std::endl;
-
-
-    }
-
-    {
-        std::string screenshotRequest = R"({"id":2,"method":"Page.captureScreenshot","params":{"format":"png"}})";
-        std::vector<char> frame;
-        frame.push_back(0x81); // FIN 비트 설정 및 텍스트 프레임
-        frame.push_back(screenshotRequest.size()); // 페이로드 길이
-        frame.insert(frame.end(), screenshotRequest.begin(), screenshotRequest.end()); // 페이로드 추가
+        // Target.getTargets 호출
+        // 사용가능한 모든 대상 리스트 반환 
+        std::string message = R"({
+            "id": 1,
+            "method": "Target.getTargets"
+        })";
+        std::vector<char> frame = cdp::createWebSocketBuffer(message.c_str(), message.size());
         ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
-        std::cout << "[request]: \n" << screenshotRequest << std::endl;
+        std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
 
-        std::string screenshotResponse;
-        totalReceived = bytesReceived = 0;
-        const std::string savePath = "screenshot.png";
-        std::ofstream file(savePath, std::ios::out | std::ios::binary);
+        std::vector<char> byteBuf;
+        const size_t BUF_LEN = 4096;
+	    std::vector<char> recvBuf(BUF_LEN, 0);
         while (true) {
-            memset(buffer, 0, MAX_BUFFER_SIZE);
-            bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE);
-            if (bytesReceived < 0) {
+            int recvBytes = recv(sock, &recvBuf[0], static_cast<int>(recvBuf.size()), 0);
+            if (recvBytes < 0) {
                 std::cout << "Error reading server response" << std::endl;
                 close(sock);
                 return;
+            } else if (recvBytes == 0) {
+                std::cout << "No bytes received from server" << std::endl;
+                close(sock);
+                return;
             }
-            totalReceived += bytesReceived;
-
-            if (file.is_open()) {
-                file.write(buffer, bytesReceived);
-            } else {
-                std::cerr << "Failed to save screenshot" << std::endl;
-            }
-            
-            if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
+            byteBuf.insert(byteBuf.end(), recvBuf.begin(), recvBuf.begin() + recvBytes);
+            if (recvBytes < BUF_LEN) {
                 // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
                 break;
             }
         }
-        file.close();
-        std::cout << "Screenshot saved as " << savePath << std::endl;
+
+        std::vector<char> responseBody(byteBuf.size(), 0);
+        websocket_parser_settings settings;
+        websocket_parser_settings_init(&settings);
+        settings.on_frame_body = [](websocket_parser* parser, const char* at, size_t length) -> int {
+            if(parser->flags & WS_HAS_MASK) {
+                // if frame has mask, we have to copy and decode data via websocket_parser_copy_masked function
+                websocket_parser_decode((char*)parser->data, at, length, parser);
+            } else {
+                memcpy(parser->data, at, length);
+            }
+            return 0;
+        };
+        websocket_parser* parser = (websocket_parser*)malloc(sizeof(websocket_parser));
+        websocket_parser_init(parser);
+        parser->data = &responseBody[0];
+        size_t nread = websocket_parser_execute(parser, &settings, &byteBuf[0], byteBuf.size());
+        free(parser);
+
+        rmessage = json::parse(static_cast<char*>(&responseBody[0]));
+        std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
     }
+
+    // {
+    //     // Target.attachToTarget 호출
+    //     // 대상 타겟 중 페이지 타겟을 찾아서 첫 번째 페이지 타겟에 대해 attachToTarget 호출
+    //     std::string message = R"({
+    //         "id": 2,
+    //         "method": "Target.attachToTarget",
+    //         "params": {
+    //             "targetId": "${targetInfo.targetId}",
+    //             "flatten": true
+    //         }
+    //     })";
+
+    //     size_t startPos = message.find("${targetInfo.targetId}");
+    //     if(startPos != std::string::npos) {
+    //         json message_result = rmessage["result"];
+    //         json target_info;
+    //         for (auto& element : message_result["targetInfos"]) {
+    //             if (element["type"] == "page") {
+    //                 target_info = element;
+    //                 break;
+    //             }
+    //         }
+    //         message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
+    //     }
+    //     std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
+    //     ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
+    //     std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
+
+    //     std::string response;
+    //     totalReceived = bytesReceived = 0;
+    //     while (true) {
+    //         memset(buffer, 0, MAX_BUFFER_SIZE);
+    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
+    //         if (bytesReceived < 0) {
+    //             std::cout << "Error reading server response" << std::endl;
+    //             close(sock);
+    //             return;
+    //         } else if (bytesReceived == 0) {
+    //             std::cout << "No bytes received from server" << std::endl;
+    //             close(sock);
+    //             return;
+    //         }
+    //         totalReceived += bytesReceived;
+    //         buffer[bytesReceived] = '\0';
+    //         response += buffer;
+    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
+    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+    //             break;
+    //         }
+    //     }
+    //     rmessage = json::parse(response);
+    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+
+    //     totalReceived = bytesReceived = 0;
+    //     while (true) {
+    //         memset(buffer, 0, MAX_BUFFER_SIZE);
+    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
+    //         if (bytesReceived < 0) {
+    //             std::cout << "Error reading server response" << std::endl;
+    //             close(sock);
+    //             return;
+    //         } else if (bytesReceived == 0) {
+    //             std::cout << "No bytes received from server" << std::endl;
+    //             close(sock);
+    //             return;
+    //         }
+    //         totalReceived += bytesReceived;
+    //         buffer[bytesReceived] = '\0';
+    //         response += buffer;
+    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
+    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+    //             break;
+    //         }
+    //     }
+    //     rmessage = json::parse(response);
+    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+    // }
+
+    // {
+    //     // Page.captureScreenshot 호출
+    //     std::string message = R"({
+    //         "sessionId": "{message.result.sessionId}",
+    //         "id": 3,
+    //         "method": "Page.captureScreenshot",
+    //         "params": {
+    //             "format": "png",
+    //             "quality": 100,
+    //             "fromSurface": true
+    //         }
+    //     })";
+
+    //     size_t startPos = message.find("${targetInfo.targetId}");
+    //     if(startPos != std::string::npos) {
+    //         json message_result = rmessage["result"];
+    //         json target_info;
+    //         for (auto& element : message_result["targetInfos"]) {
+    //             if (element["type"] == "page") {
+    //                 target_info = element;
+    //                 break;
+    //             }
+    //         }
+    //         message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
+    //     }
+    //     std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
+    //     ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
+    //     std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
+
+    //     std::string response;
+    //     totalReceived = bytesReceived = 0;
+    //     while (true) {
+    //         memset(buffer, 0, MAX_BUFFER_SIZE);
+    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
+    //         if (bytesReceived < 0) {
+    //             std::cout << "Error reading server response" << std::endl;
+    //             close(sock);
+    //             return;
+    //         } else if (bytesReceived == 0) {
+    //             std::cout << "No bytes received from server" << std::endl;
+    //             close(sock);
+    //             return;
+    //         }
+    //         totalReceived += bytesReceived;
+    //         buffer[bytesReceived] = '\0';
+    //         response += buffer;
+    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
+    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+    //             break;
+    //         }
+    //     }
+    //     rmessage = json::parse(response);
+    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+
+    //     std::string screenshotData = rmessage["result"]["data"].get<std::string>();
+    //     {
+    //         std::vector<unsigned char> decodedData = base64Decode(screenshotData);
+    //         std::ofstream file("screenshot.png", std::ios::binary);
+    //         file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
+    //         file.close();
+    //     }
+    // }
     close(sock);
 }
 

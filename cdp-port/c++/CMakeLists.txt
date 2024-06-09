@@ -15,7 +15,7 @@ else()
     message(FATAL_ERROR "Boost was not found!")
 endif()
 
-add_executable(NoDepMain NoDepMain.cpp)
+add_executable(NoDepMain NoDepMain.cpp websocket-parser-1.0.2/websocket_parser.c)
 
 # add_executable(cdp-port _NoDepMain.cpp)
 # target_link_libraries(cdp-port ssl crypto)

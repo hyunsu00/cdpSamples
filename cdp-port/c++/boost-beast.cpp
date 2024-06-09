@@ -151,16 +151,17 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
     // See https://tools.ietf.org/html/rfc7230#section-5.4
     std::string host = addr + ":" + std::to_string(port);
 
-    // 요청 데코레이터를 정의합니다.
-    auto const decorator = [](http::request<http::empty_body>& req) {
-        // 요청을 출력합니다.
-        std::cout << "[Handshake][request] :\n" << req << std::endl;
-    };
-
     // 핸드셰이크를 수행합니다.
     http::response<http::string_body> res;
     boost::beast::error_code ec;
-    ws.handshake_ex(res, host, path, decorator, ec);
+#if BOOST_VERSION >= 107400
+    ws.handshake(res, host, path,  ec);
+#else
+    ws.handshake_ex(res, host, path, [](http::request<http::empty_body>& req) {
+        // 요청을 출력합니다.
+        std::cout << "[Handshake][request] :\n" << req << std::endl;
+    }, ec);
+#endif
 
     // 응답을 출력합니다.
     if (!ec) {
