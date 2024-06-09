@@ -69,7 +69,7 @@ std::vector<unsigned char> base64Decode(const std::string& encoded_string)
 
 std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222)
 {
-    auto const host = std::string(addr);
+    auto const host = addr;
     auto const port_str = std::to_string(port);
     auto const target = "/json/version";
     int version = 11;
@@ -79,11 +79,11 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     tcp::resolver resolver{ioc};
     tcp::socket socket{ioc};
 
-    auto const results = resolver.resolve(host, port_str);
+    auto const results = resolver.resolve(host, port_str.c_str());
     net::connect(socket, results);
 
     http::request<http::string_body> request{http::verb::get, target, version};
-    request.set(http::field::host, host);
+    request.set(http::field::host, std::string(host) + ":" + port_str);
     request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     http::write(socket, request);
@@ -268,7 +268,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
 int main() 
 {
     try {
-        std::string webSocketDebuggerUrl = getWebSocketDebuggerUrl();
+        std::string webSocketDebuggerUrl = getWebSocketDebuggerUrl("127.0.0.1", 9333);
         std::cout << "webSocketDebuggerUrl : " << webSocketDebuggerUrl << std::endl;
         takeScreenshot(webSocketDebuggerUrl);
     } catch (const std::exception& e) {
