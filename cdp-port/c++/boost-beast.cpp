@@ -17,36 +17,6 @@ namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 using tcp = boost::asio::ip::tcp;   // from <boost/asio/ip/tcp.hpp>
 using json = nlohmann::json;
 
-std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222)
-{
-    auto const host = std::string(addr);
-    auto const port_str = std::to_string(port);
-    auto const target = "/json/version";
-    int version = 11;
-
-    net::io_context ioc;
-
-    tcp::resolver resolver{ioc};
-    tcp::socket socket{ioc};
-
-    auto const results = resolver.resolve(host, port_str.c_str());
-    net::connect(socket, results);
-
-    http::request<http::string_body> request{http::verb::get, target, version};
-    request.set(http::field::host, host);
-    request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-    http::write(socket, request);
-
-    beast::flat_buffer buffer;
-    http::response<http::dynamic_body> response;
-    http::read(socket, buffer, response);
-
-    auto const responseBody = boost::beast::buffers_to_string(response.body().data());
-    auto const message = json::parse(responseBody);
-    return message["webSocketDebuggerUrl"];
-}
-
 // Function to decode base64 string to binary data
 std::vector<unsigned char> base64Decode(const std::string& encoded_string) 
 {
@@ -97,6 +67,37 @@ std::vector<unsigned char> base64Decode(const std::string& encoded_string)
     return ret;
 }
 
+std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222)
+{
+    auto const host = std::string(addr);
+    auto const port_str = std::to_string(port);
+    auto const target = "/json/version";
+    int version = 11;
+
+    net::io_context ioc;
+
+    tcp::resolver resolver{ioc};
+    tcp::socket socket{ioc};
+
+    auto const results = resolver.resolve(host, port_str);
+    net::connect(socket, results);
+
+    http::request<http::string_body> request{http::verb::get, target, version};
+    request.set(http::field::host, host);
+    request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    http::write(socket, request);
+
+    beast::flat_buffer buffer;
+    http::response<http::dynamic_body> response;
+    http::read(socket, buffer, response);
+
+    auto const responseBody = boost::beast::buffers_to_string(response.body().data());
+    auto const message = json::parse(responseBody);
+    std::cout << "[response.body()] :\n" << message.dump(4) << std::endl;
+    return message["webSocketDebuggerUrl"];
+}
+
 void takeScreenshot(const std::string& webSocketDebuggerUrl) 
 {
     std::regex ip_regex("(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})");
@@ -119,7 +120,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         std::cout << "Port: " << port << std::endl;
     } else {
         std::cout << "No valid port found in string" << std::endl;
-        return;
+        std::cout << "Using default port 9222" << std::endl;
     }
 
     std::string path;
@@ -171,6 +172,9 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         // 버퍼를 문자열로 변환
         std::string response = beast::buffers_to_string(buffer.data());
         rmessage = json::parse(response);
+
+        std::cout << "[request] :\n" << json::parse(message).dump(4) << std::endl;
+        std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
     }
     
     {
@@ -210,6 +214,9 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         // 버퍼를 문자열로 변환
         std::string response = beast::buffers_to_string(buffer.data());
         rmessage = json::parse(response);
+
+        std::cout << "[request] :\n" << json::parse(message).dump(4) << std::endl;
+        std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
     }
 
     {
@@ -242,6 +249,10 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         // 버퍼를 문자열로 변환
         std::string response = beast::buffers_to_string(buffer.data());
         rmessage = json::parse(response);
+
+        std::cout << "[request] :\n" << json::parse(message).dump(4) << std::endl;
+        std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+
         std::string screenshotData = rmessage["result"]["data"].get<std::string>();
         {
             std::vector<unsigned char> decodedData = base64Decode(screenshotData);
