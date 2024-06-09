@@ -115,6 +115,35 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     return jBody["webSocketDebuggerUrl"];
 }
 
+void write_frame(int socket_fd, const char* payload) {
+
+    struct frame_header {
+        uint64_t len;
+        uint32_t key;
+        uint8_t op;
+        uint8_t fin  : 1;
+        uint8_t mask : 1;
+        uint8_t rsv1 : 1;
+        uint8_t rsv2 : 1;
+        uint8_t rsv3 : 1;
+    };
+    struct frame_header header;
+    header.len = strlen(payload);  // 페이로드의 길이
+    header.key = 0;  // 키는 필요에 따라 설정
+    header.op = 1;  // 텍스트 프레임
+    header.fin = 1;  // 마지막 프레임
+    header.mask = 0;  // 클라이언트에서 서버로 보낼 때만 마스킹
+    header.rsv1 = 0;
+    header.rsv2 = 0;
+    header.rsv3 = 0;
+
+    // 헤더를 소켓에 쓰기
+    send(socket_fd, &header, sizeof(struct frame_header), 0);
+
+    // 페이로드를 소켓에 쓰기
+    send(socket_fd, payload, header.len, 0);
+}
+
 std::string getWebSocketKey() 
 {
     return "dGhlIHNhbXBsZSBub25jZQ==";

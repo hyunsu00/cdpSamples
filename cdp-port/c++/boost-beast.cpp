@@ -85,16 +85,17 @@ std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t por
     http::request<http::string_body> request{http::verb::get, target, version};
     request.set(http::field::host, std::string(host) + ":" + port_str);
     request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
     http::write(socket, request);
-
+    std::cout << "[http][request] :\n" << request << std::endl;
+    
     beast::flat_buffer buffer;
     http::response<http::dynamic_body> response;
     http::read(socket, buffer, response);
 
     auto const responseBody = boost::beast::buffers_to_string(response.body().data());
     auto const message = json::parse(responseBody);
-    std::cout << "[response.body()] :\n" << message.dump(4) << std::endl;
+    std::cout << "[http][response] :\n" << response << std::endl;
+    std::cout << "[http][response.body()] :\n" << message.dump(4) << std::endl;
     return message["webSocketDebuggerUrl"];
 }
 
@@ -150,8 +151,23 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
     // See https://tools.ietf.org/html/rfc7230#section-5.4
     std::string host = addr + ":" + std::to_string(port);
 
-    // Perform the websocket handshake
-    ws.handshake(host, path);
+    // 요청 데코레이터를 정의합니다.
+    auto const decorator = [](http::request<http::empty_body>& req) {
+        // 요청을 출력합니다.
+        std::cout << "[Handshake][request] :\n" << req << std::endl;
+    };
+
+    // 핸드셰이크를 수행합니다.
+    http::response<http::string_body> res;
+    boost::beast::error_code ec;
+    ws.handshake_ex(res, host, path, decorator, ec);
+
+    // 응답을 출력합니다.
+    if (!ec) {
+        std::cout << "[Handshake][response] :\n" << res << std::endl;
+    } else {
+        std::cerr << "[Handshake][failed] : " << ec.message() << std::endl;
+    }
 
     json rmessage;
     {
@@ -161,8 +177,9 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             "id": 1,
             "method": "Target.getTargets"
         })";
-        ws.write(net::buffer(std::string(message)));
 
+        ws.write(net::buffer(message));
+        
         // 들어오는 메시지를 보관할 버퍼
         beast::flat_buffer buffer;
 
@@ -268,7 +285,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
 int main() 
 {
     try {
-        std::string webSocketDebuggerUrl = getWebSocketDebuggerUrl("127.0.0.1", 9333);
+        std::string webSocketDebuggerUrl = getWebSocketDebuggerUrl();
         std::cout << "webSocketDebuggerUrl : " << webSocketDebuggerUrl << std::endl;
         takeScreenshot(webSocketDebuggerUrl);
     } catch (const std::exception& e) {
