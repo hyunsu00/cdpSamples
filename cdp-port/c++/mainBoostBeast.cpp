@@ -203,12 +203,12 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             "id": 2,
             "method": "Target.attachToTarget",
             "params": {
-                "targetId": "{targetInfo.targetId}",
+                "targetId": "${targetInfo.targetId}",
                 "flatten": true
             }
         })";
 
-        size_t startPos = message.find("{targetInfo.targetId}");
+        size_t startPos = message.find("${targetInfo.targetId}");
         if(startPos != std::string::npos) {
             json message_result = rmessage["result"];
             json target_info;
@@ -218,7 +218,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
                     break;
                 }
             }
-            message.replace(startPos, strlen("{targetInfo.targetId}"), target_info["targetId"].get<std::string>());
+            message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
         }
         ws.write(net::buffer(std::string(message)));
 
@@ -242,7 +242,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
 
         // Page.captureScreenshot 호출
         std::string message = R"({
-            "sessionId": "{message.result.sessionId}",
+            "sessionId": "${message.result.sessionId}",
             "id": 3,
             "method": "Page.captureScreenshot",
             "params": {
@@ -252,9 +252,9 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             }
         })";
 
-        size_t startPos = message.find("{message.result.sessionId}");
+        size_t startPos = message.find("${message.result.sessionId}");
         if(startPos != std::string::npos) {
-            message.replace(startPos, strlen("{message.result.sessionId}"), rmessage["result"]["sessionId"].get<std::string>());
+            message.replace(startPos, strlen("${message.result.sessionId}"), rmessage["result"]["sessionId"].get<std::string>());
         }
         ws.write(net::buffer(std::string(message)));
 
@@ -274,7 +274,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         std::string screenshotData = rmessage["result"]["data"].get<std::string>();
         {
             std::vector<unsigned char> decodedData = base64Decode(screenshotData);
-            std::ofstream file("screenshot.png", std::ios::binary);
+            std::ofstream file("mainBoostBeast-screenshot.png", std::ios::binary);
             file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
             file.close();
         }

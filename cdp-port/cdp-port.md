@@ -24,6 +24,23 @@ $ sudo yum install boost-devel
 $ sudo dnf install boost-devel
 ```
 
+## libcurl
+```bash
+# 우분투
 sudo apt-get install libcurl4-openssl-dev
 
+# 레드햇
+$ sudo yum install libcurl-devel
+$ sudo dnf install libcurl-devel
+```
+
+## libwebsockets
+```bash
+# 우분투
+sudo apt-get install libwebsockets-dev
+
+# 레드햇
+$ sudo yum install libwebsockets-devel
+$ sudo dnf install libwebsockets-devel
+```
 

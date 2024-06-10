@@ -371,7 +371,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         std::string screenshotData = rmessage["result"]["data"].get<std::string>();
         {
             std::vector<unsigned char> decodedData = base64Decode(screenshotData);
-            std::ofstream file("screenshot.png", std::ios::binary);
+            std::ofstream file("mainSocket-screenshot.png", std::ios::binary);
             file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
             file.close();
         }
