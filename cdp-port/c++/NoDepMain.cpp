@@ -219,150 +219,163 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
         }
 
         FrameBodyVector frameBodyVector = getFrameBodyVector(&byteBuf[0], byteBuf.size());
-        rmessage = json::parse(static_cast<char*>(frameBodyVector[0].data()));
+        frameBodyVector[0].push_back('\0');
+        std::string response = static_cast<char*>(&frameBodyVector[0][0]);
+        rmessage = json::parse(response);
+
         std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
     }
 
-    // {
-    //     // Target.attachToTarget 호출
-    //     // 대상 타겟 중 페이지 타겟을 찾아서 첫 번째 페이지 타겟에 대해 attachToTarget 호출
-    //     std::string message = R"({
-    //         "id": 2,
-    //         "method": "Target.attachToTarget",
-    //         "params": {
-    //             "targetId": "${targetInfo.targetId}",
-    //             "flatten": true
-    //         }
-    //     })";
+    {
+        // Target.attachToTarget 호출
+        // 대상 타겟 중 페이지 타겟을 찾아서 첫 번째 페이지 타겟에 대해 attachToTarget 호출
+        std::string message = R"({
+            "id": 2,
+            "method": "Target.attachToTarget",
+            "params": {
+                "targetId": "${targetInfo.targetId}",
+                "flatten": true
+            }
+        })";
 
-    //     size_t startPos = message.find("${targetInfo.targetId}");
-    //     if(startPos != std::string::npos) {
-    //         json message_result = rmessage["result"];
-    //         json target_info;
-    //         for (auto& element : message_result["targetInfos"]) {
-    //             if (element["type"] == "page") {
-    //                 target_info = element;
-    //                 break;
-    //             }
-    //         }
-    //         message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
-    //     }
-    //     std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
-    //     ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
-    //     std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
+        size_t startPos = message.find("${targetInfo.targetId}");
+        if(startPos != std::string::npos) {
+            json message_result = rmessage["result"];
+            json target_info;
+            for (auto& element : message_result["targetInfos"]) {
+                if (element["type"] == "page") {
+                    target_info = element;
+                    break;
+                }
+            }
+            message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
+        }
+        std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
+        ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
+        std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
 
-    //     std::string response;
-    //     totalReceived = bytesReceived = 0;
-    //     while (true) {
-    //         memset(buffer, 0, MAX_BUFFER_SIZE);
-    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
-    //         if (bytesReceived < 0) {
-    //             std::cout << "Error reading server response" << std::endl;
-    //             close(sock);
-    //             return;
-    //         } else if (bytesReceived == 0) {
-    //             std::cout << "No bytes received from server" << std::endl;
-    //             close(sock);
-    //             return;
-    //         }
-    //         totalReceived += bytesReceived;
-    //         buffer[bytesReceived] = '\0';
-    //         response += buffer;
-    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
-    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
-    //             break;
-    //         }
-    //     }
-    //     rmessage = json::parse(response);
-    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+        std::vector<char> byteBuf;
+        const size_t BUF_LEN = 4096;
+	    std::vector<char> recvBuf(BUF_LEN, 0);
+        while (true) {
+            int recvBytes = recv(sock, &recvBuf[0], static_cast<int>(recvBuf.size()), 0);
+            if (recvBytes < 0) {
+                std::cout << "Error reading server response" << std::endl;
+                close(sock);
+                return;
+            } else if (recvBytes == 0) {
+                std::cout << "No bytes received from server" << std::endl;
+                close(sock);
+                return;
+            }
+            byteBuf.insert(byteBuf.end(), recvBuf.begin(), recvBuf.begin() + recvBytes);
+            if (recvBytes < BUF_LEN) {
+                // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+                break;
+            }
+        }
 
-    //     totalReceived = bytesReceived = 0;
-    //     while (true) {
-    //         memset(buffer, 0, MAX_BUFFER_SIZE);
-    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
-    //         if (bytesReceived < 0) {
-    //             std::cout << "Error reading server response" << std::endl;
-    //             close(sock);
-    //             return;
-    //         } else if (bytesReceived == 0) {
-    //             std::cout << "No bytes received from server" << std::endl;
-    //             close(sock);
-    //             return;
-    //         }
-    //         totalReceived += bytesReceived;
-    //         buffer[bytesReceived] = '\0';
-    //         response += buffer;
-    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
-    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
-    //             break;
-    //         }
-    //     }
-    //     rmessage = json::parse(response);
-    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
-    // }
+        FrameBodyVector frameBodyVector = getFrameBodyVector(&byteBuf[0], byteBuf.size());
+        std::cout << "[response] :\n" << std::endl;
+        for (auto& frameBody : frameBodyVector) {
+            frameBody.push_back('\0');
 
-    // {
-    //     // Page.captureScreenshot 호출
-    //     std::string message = R"({
-    //         "sessionId": "{message.result.sessionId}",
-    //         "id": 3,
-    //         "method": "Page.captureScreenshot",
-    //         "params": {
-    //             "format": "png",
-    //             "quality": 100,
-    //             "fromSurface": true
-    //         }
-    //     })";
+            std::cout << json::parse(static_cast<char*>(&frameBody[0])).dump(4) << std::endl;
+        }
 
-    //     size_t startPos = message.find("${targetInfo.targetId}");
-    //     if(startPos != std::string::npos) {
-    //         json message_result = rmessage["result"];
-    //         json target_info;
-    //         for (auto& element : message_result["targetInfos"]) {
-    //             if (element["type"] == "page") {
-    //                 target_info = element;
-    //                 break;
-    //             }
-    //         }
-    //         message.replace(startPos, strlen("${targetInfo.targetId}"), target_info["targetId"].get<std::string>());
-    //     }
-    //     std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
-    //     ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
-    //     std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
+        if (frameBodyVector.size() == 1) {
+            byteBuf.clear();
+            while (true) {
+                int recvBytes = recv(sock, &recvBuf[0], static_cast<int>(recvBuf.size()), 0);
+                if (recvBytes < 0) {
+                    std::cout << "Error reading server response" << std::endl;
+                    close(sock);
+                    return;
+                } else if (recvBytes == 0) {
+                    std::cout << "No bytes received from server" << std::endl;
+                    close(sock);
+                    return;
+                }
+                byteBuf.insert(byteBuf.end(), recvBuf.begin(), recvBuf.begin() + recvBytes);
+                if (recvBytes < BUF_LEN) {
+                    // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+                    break;
+                }
+            }
 
-    //     std::string response;
-    //     totalReceived = bytesReceived = 0;
-    //     while (true) {
-    //         memset(buffer, 0, MAX_BUFFER_SIZE);
-    //         bytesReceived = read(sock, buffer, MAX_BUFFER_SIZE - 1);
-    //         if (bytesReceived < 0) {
-    //             std::cout << "Error reading server response" << std::endl;
-    //             close(sock);
-    //             return;
-    //         } else if (bytesReceived == 0) {
-    //             std::cout << "No bytes received from server" << std::endl;
-    //             close(sock);
-    //             return;
-    //         }
-    //         totalReceived += bytesReceived;
-    //         buffer[bytesReceived] = '\0';
-    //         response += buffer;
-    //         if (bytesReceived < (MAX_BUFFER_SIZE - 1)) {
-    //             // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
-    //             break;
-    //         }
-    //     }
-    //     rmessage = json::parse(response);
-    //     std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+            frameBodyVector = getFrameBodyVector(&byteBuf[0], byteBuf.size());
+            frameBodyVector[0].push_back('\0');
+            std::string response = static_cast<char*>(&frameBodyVector[0][0]);
+            rmessage = json::parse(response);
 
-    //     std::string screenshotData = rmessage["result"]["data"].get<std::string>();
-    //     {
-    //         std::vector<unsigned char> decodedData = base64Decode(screenshotData);
-    //         std::ofstream file("screenshot.png", std::ios::binary);
-    //         file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
-    //         file.close();
-    //     }
-    // }
+            std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+        } else if (frameBodyVector.size() == 2) {
+            rmessage = json::parse(static_cast<char*>(&frameBodyVector[1][0]));
+        } else {
+            std::cout << "Invalid response" << std::endl;
+            close(sock);
+            return;
+        }
+    }
+
+    {
+        // Page.captureScreenshot 호출
+        std::string message = R"({
+            "sessionId": "${message.result.sessionId}",
+            "id": 3,
+            "method": "Page.captureScreenshot",
+            "params": {
+                "format": "png",
+                "quality": 100,
+                "fromSurface": true
+            }
+        })";
+
+        size_t startPos = message.find("${message.result.sessionId}");
+        if(startPos != std::string::npos) {
+            message.replace(startPos, strlen("${message.result.sessionId}"), rmessage["result"]["sessionId"].get<std::string>());
+        }
+
+        std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
+        ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
+        std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
+
+        std::vector<char> byteBuf;
+        const size_t BUF_LEN = 4096;
+	    std::vector<char> recvBuf(BUF_LEN, 0);
+        while (true) {
+            int recvBytes = recv(sock, &recvBuf[0], static_cast<int>(recvBuf.size()), 0);
+            if (recvBytes < 0) {
+                std::cout << "Error reading server response" << std::endl;
+                close(sock);
+                return;
+            } else if (recvBytes == 0) {
+                std::cout << "No bytes received from server" << std::endl;
+                close(sock);
+                return;
+            }
+            byteBuf.insert(byteBuf.end(), recvBuf.begin(), recvBuf.begin() + recvBytes);
+            if (recvBytes < BUF_LEN) {
+                // 버퍼 크기보다 작은 데이터를 받았다면, 이는 데이터의 끝을 의미
+                break;
+            }
+        }
+
+        FrameBodyVector frameBodyVector = getFrameBodyVector(&byteBuf[0], byteBuf.size());
+        frameBodyVector[0].push_back('\0');
+        std::string response = static_cast<char*>(&frameBodyVector[0][0]);
+        rmessage = json::parse(response);
+        
+        std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
+
+        std::string screenshotData = rmessage["result"]["data"].get<std::string>();
+        {
+            std::vector<unsigned char> decodedData = base64Decode(screenshotData);
+            std::ofstream file("screenshot.png", std::ios::binary);
+            file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
+            file.close();
+        }
+    }
     close(sock);
 }
 

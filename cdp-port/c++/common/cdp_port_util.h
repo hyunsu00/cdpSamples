@@ -202,15 +202,15 @@ namespace {
 
         auto _onFrameHeader = [](const WebsocketParser& parser) {
             std::cout << "[_onFrameHeader] : " << std::endl;
-            std::cout << "opcode = " << (parser.flags & WS_OP_MASK)<< std::endl;
-            std::cout << "is_final = " << (parser.flags & WS_FIN) << std::endl << std::endl;
+            std::cout << "opcode = " << ((parser.flags & WS_OP_MASK) ? true : false) << std::endl;
+            std::cout << "is_final = " << ((parser.flags & WS_FIN) ? true : false) << std::endl << std::endl;
         };
 
         auto _onFrameEnd = [](const WebsocketParser& parser) {
             std::cout << "[_onFrameEnd] :" << std::endl;
             std::cout << "parser.state = " << parser.state << std::endl;
             std::cout << "parser.flags = " << parser.flags << std::endl;
-            std::cout << "parser.mask_offset = " << parser.mask_offset << std::endl;
+            std::cout << "parser.mask_offset = " << static_cast<size_t>(parser.mask_offset) << std::endl;
             std::cout << "parser.length= " << parser.length << std::endl;
             std::cout << "parser.require = " << parser.require << std::endl;
             std::cout << "parser.offset = " << parser.offset << std::endl << std::endl;
@@ -218,7 +218,7 @@ namespace {
 
         auto _onFrameBody = [](WebsocketParser& parser, const char* at, size_t length) -> std::vector<char> {
 
-            std::vector<char> frameBody(0, length);
+            std::vector<char> frameBody(length, 0);
             if (parser.flags & WS_HAS_MASK) {
                 [] (WebsocketParser& parser, char* dst, const char* src, size_t len) {
                     size_t i = 0;
