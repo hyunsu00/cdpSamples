@@ -8,7 +8,7 @@
 #include <functional>
 #include "nlohmann/json.hpp"
 #include "common/cdp_port_util.h"
-#include "websocket-parser-1.0.2/websocket_parser.h"
+// #include "websocket-parser-1.0.2/websocket_parser.h"
 using json = nlohmann::json;
 
 std::string getWebSocketDebuggerUrl(const char* addr = "127.0.0.1", uint16_t port = 9222) 
@@ -193,7 +193,7 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             "id": 1,
             "method": "Target.getTargets"
         })";
-        std::vector<char> frame = cdp::createWebSocketBuffer(message.c_str(), message.size());
+        std::vector<char> frame = createWebSocketBuffer(message.c_str(), message.size());
         ret = send(sock, reinterpret_cast<char*>(frame.data()), frame.size(), 0);
         std::cout << "[request]: \n" << json::parse(message).dump(4) << std::endl;
 
@@ -218,25 +218,8 @@ void takeScreenshot(const std::string& webSocketDebuggerUrl)
             }
         }
 
-        std::vector<char> responseBody(byteBuf.size(), 0);
-        websocket_parser_settings settings;
-        websocket_parser_settings_init(&settings);
-        settings.on_frame_body = [](websocket_parser* parser, const char* at, size_t length) -> int {
-            if(parser->flags & WS_HAS_MASK) {
-                // if frame has mask, we have to copy and decode data via websocket_parser_copy_masked function
-                websocket_parser_decode((char*)parser->data, at, length, parser);
-            } else {
-                memcpy(parser->data, at, length);
-            }
-            return 0;
-        };
-        websocket_parser* parser = (websocket_parser*)malloc(sizeof(websocket_parser));
-        websocket_parser_init(parser);
-        parser->data = &responseBody[0];
-        size_t nread = websocket_parser_execute(parser, &settings, &byteBuf[0], byteBuf.size());
-        free(parser);
-
-        rmessage = json::parse(static_cast<char*>(&responseBody[0]));
+        FrameBodyVector frameBodyVector = getFrameBodyVector(&byteBuf[0], byteBuf.size());
+        rmessage = json::parse(static_cast<char*>(frameBodyVector[0].data()));
         std::cout << "[response] :\n" << rmessage.dump(4) << std::endl;
     }
 
