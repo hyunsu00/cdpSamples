@@ -5,6 +5,8 @@ import argparse
 import websocket # pip3 install websocket-client
 import asyncio
 import websockets # pip3 install websockets
+from io import BytesIO
+from PIL import Image # pip3 install pillow
 
 def get_websocket_debugger_url(addr, port):
     conn = http.client.HTTPConnection(addr, port)
@@ -14,7 +16,7 @@ def get_websocket_debugger_url(addr, port):
     jsonData = json.loads(data)
     return jsonData['webSocketDebuggerUrl']
 
-def sync_main():
+def sync_screenshot(url):
     # 크롬 실행시 --remote-allow-origins=* 나 --remote-allow-origins=http://127.0.0.1:9222 필수
     try:
         dev_tools_websocket_url = get_websocket_debugger_url('127.0.0.1', 9222)
@@ -28,7 +30,7 @@ def sync_main():
             "id": 1,
             "method": "Target.createTarget",
             "params": {
-                "url": "https://www.google.com/"
+                "url": url
             }
         }))
 
@@ -82,7 +84,7 @@ def sync_main():
     except Exception as e:
         print(e)
 
-async def async_main():
+async def async_screenshot(url):
     try:
         dev_tools_websocket_url = get_websocket_debugger_url('127.0.0.1', 9222)
         print(dev_tools_websocket_url)
@@ -93,7 +95,7 @@ async def async_main():
                 "id": 1,
                 "method": "Target.createTarget",
                 "params": {
-                    "url": "https://www.naver.com/"
+                    "url": url
                 }
             }))
 
@@ -147,14 +149,121 @@ async def async_main():
     except Exception as e:
         print(e)
 
+async def async_full_screenshot(url):
+    try :
+        # WebSocket 연결 설정
+        dev_tools_websocket_url = get_websocket_debugger_url('127.0.0.1', 9222)
+        print(dev_tools_websocket_url)
+        
+        async with websockets.connect(dev_tools_websocket_url) as ws:
+            # 탭 생성
+            await ws.send(json.dumps({
+                "id": 1,
+                "method": "Target.createTarget",
+                "params": {"url": "about:blank"}
+            }))
+
+            while True:
+                message = json.loads(await ws.recv())
+                print(f'message : {json.dumps(message)}')
+
+                # 탭 생성 응답
+                if message.get('id') == 1 and 'result' in message and 'targetId' in message['result']:
+                    target_id = message['result']['targetId']
+                    # 탭 연결
+                    await ws.send(json.dumps({
+                        "id": 2,
+                        "method": "Target.attachToTarget",
+                        "params": {"targetId": target_id, "flatten": True}
+                    }))
+                # 탭 연결 응답
+                elif message.get('id') == 2 and 'result' in message and 'sessionId' in message['result']:
+                    session_id = message["result"]["sessionId"]
+                    # 페이지 로드
+                    await ws.send(json.dumps({
+                        "id": 3,
+                        "method": "Page.navigate",
+                        "params": {"url": url},
+                        "sessionId": session_id
+                    }))
+
+                    await asyncio.sleep(2)
+                # 페이지 로드 응답
+                elif message.get('id') == 3 and 'sessionId' in message:
+                    session_id = message["sessionId"]
+                    # 스크롤바 숨기기
+                    await ws.send(json.dumps({
+                        "id": 4,
+                        "method": "Runtime.evaluate",
+                        "params": {"expression": "document.body.style.overflow = 'hidden';"},
+                        "sessionId": session_id
+                    }))
+                # 스크롤바 숨기기 응답
+                elif message.get('id') == 4 and 'sessionId' in message:
+                    session_id = message["sessionId"]
+                     # 페이지 높이 가져오기
+                    await ws.send(json.dumps({
+                        "id": 5,
+                        "method": "Runtime.evaluate",
+                        "params": {"expression": "document.body.scrollHeight"},
+                        "sessionId": session_id
+                    }))
+                # 페이지 높이 응답
+                elif message.get('id') == 5 and 'result' in message and 'result' in message['result'] and 'value' in message['result']['result']:
+                    session_id = message["sessionId"]
+                    page_height = message["result"]["result"]["value"]
+                    # 뷰포트 크기 설정
+                    viewport_height = 1080  # 원하는 뷰포트 높이
+                    num_screenshots = (page_height // viewport_height) + 1
+
+                    # 전체 페이지 스크린샷 캡처
+                    screenshots = []
+                    for i in range(num_screenshots):
+                        offset = i * viewport_height
+                        # 스크롤 이동
+                        await ws.send(json.dumps({
+                            "id": 6 + i * 2,
+                            "method": "Runtime.evaluate",
+                            "params": {"expression": f"window.scrollTo(0, {offset});", "awaitPromise": True},
+                            "sessionId": session_id
+                        }))
+                        await ws.recv()
+
+                        # 스크린샷 촬영
+                        await ws.send(json.dumps({
+                            "id": 7 + i * 2,
+                            "method": "Page.captureScreenshot",
+                            "params": {"fromSurface": True},
+                            "sessionId": session_id
+                        }))
+                        _message = json.loads(await ws.recv())
+                        screenshot = _message["result"]["data"]
+                        screenshots.append(screenshot)
+
+                    # 스크린샷 결합
+                    images = [Image.open(BytesIO(base64.b64decode(screenshot))) for screenshot in screenshots]
+                    total_height = sum(image.height for image in images)
+                    combined_image = Image.new('RGB', (images[0].width, total_height))
+                
+                    current_height = 0
+                    for image in images:
+                        combined_image.paste(image, (0, current_height))
+                        current_height += image.height
+                
+                    combined_image.save('full_page_screenshot.png')
+    except Exception as e:
+        print(e)
+
 # 아규먼트 파서 생성
 parser = argparse.ArgumentParser()
-parser.add_argument("--mode", help="sync or async", choices=['sync', 'async'], default='sync')
+parser.add_argument("--mode", help="sync_screenshot or async_screenshot", choices=['sync_screenshot', 'async_screenshot', 'async_full_screenshot'], default='async_screenshot')
 
 args = parser.parse_args()
 
 # 아규먼트에 따라 함수 실행
-if args.mode == 'sync':
-    sync_main()
-elif args.mode == 'async':
-    asyncio.run(async_main())
+if args.mode == 'sync_screenshot':
+    sync_screenshot("https://www.google.com/")
+elif args.mode == 'async_screenshot':
+    asyncio.run(async_screenshot("https://www.naver.com/"))
+elif args.mode == 'async_full_screenshot':
+    asyncio.run(async_full_screenshot("https://www.naver.com/"))

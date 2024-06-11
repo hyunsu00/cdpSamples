@@ -9,7 +9,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/python/cdp-port.py",
-            "args": ["--mode", "async"],
+            "args": ["--mode", "async_full_screenshot"],
             "console": "integratedTerminal",
             "justMyCode": false
         },
