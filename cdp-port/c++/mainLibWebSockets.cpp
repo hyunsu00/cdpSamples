@@ -10,7 +10,6 @@
 
 using json = nlohmann::json;
 
-# if 0
 struct websocket_data {
     std::string message;
     std::string response;
@@ -202,74 +201,13 @@ void takeScreenshot(const std::string &webSocketDebuggerUrl) {
 
     lws_context_destroy(context);
 }
-#endif
-
-static int callback(lws *wsi, lws_callback_reasons reason, void *user, void *in, size_t len) {
-    switch (reason) {
-        case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            // 연결이 수립되었을 때의 처리
-            break;
-        case LWS_CALLBACK_CLIENT_RECEIVE:
-            // 메시지를 받았을 때의 처리
-            break;
-        case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-            // 연결에 실패했을 때의 처리
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-
-static struct lws_protocols protocols[] = {
-    {
-        "devtools", // 프로토콜 이름
-        callback, // 콜백 함수
-        0, // per_session_data_size
-        0, // rx_buffer_size
-        0, // id
-        NULL, // user
-        0 // tx_packet_size
-    },
-    { NULL, NULL, 0, 0, 0, NULL, 0 } // 배열 종료를 위한 NULL 항목
-};
 
 int main() {
 
-    std::string webSocketDebuggerUrl = "ws://127.0.0.1:9222/devtools/browser/8db5f2ce-e638-4405-ab84-27c3d61c659d";
+    std::string webSocketDebuggerUrl = "ws://127.0.0.1:9222/devtools/browser/91b28810-a835-4730-8500-57d25d6e46cc";
     
     std::cout << "webSocketDebuggerUrl : " << webSocketDebuggerUrl << std::endl;
 
-    // takeScreenshot(webSocketDebuggerUrl);
-
-    struct lws_context_creation_info context_info;
-    memset(&context_info, 0, sizeof(context_info));
-
-    context_info.port = CONTEXT_PORT_NO_LISTEN;
-    context_info.protocols = protocols;
-    context_info.gid = -1;
-    context_info.uid = -1;
-
-    struct lws_context *context = lws_create_context(&context_info);
-
-    struct lws_client_connect_info client_info;
-    memset(&client_info, 0, sizeof(client_info));
-
-    client_info.context = context;
-    client_info.address = "127.0.0.1";
-    client_info.port = 9222;
-    client_info.path = "/devtools/browser/8db5f2ce-e638-4405-ab84-27c3d61c659d";
-    client_info.host = client_info.address;
-    client_info.origin = client_info.address;
-    client_info.protocol = protocols[0].name;
-
-    lws *wsi = lws_client_connect_via_info(&client_info);
-
-    while (1) {
-        lws_service(context, 50);
-    }
-
-    lws_context_destroy(context);
-
+    takeScreenshot(webSocketDebuggerUrl);
     return 0;
 }

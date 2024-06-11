@@ -7,6 +7,9 @@
 ```bash
 # rockylinux 8.8
 $ /opt/google/chrome/chrome --remote-debugging-port=9222
+$ /opt/google/chrome/chrome --remote-debugging-port=9222 --remote-allow-origins=*
+$ /opt/google/chrome/chrome --remote-debugging-port=9222 
+
 $ /usr/bin/chrome --headless --remote-debugging-port=9222
 # wsl ubuntu 22.04
 $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222
