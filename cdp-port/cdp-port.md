@@ -13,7 +13,8 @@ $ /opt/google/chrome/chrome --remote-debugging-port=9222
 $ /usr/bin/chrome --headless --remote-debugging-port=9222
 # wsl ubuntu 22.04
 $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222
-$ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222 --remote-allow-origins=*
+$ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222 --remote-allow-origins=* 
+$ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222 --remote-allow-origins=* --headless
 
 PS > "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
 ```

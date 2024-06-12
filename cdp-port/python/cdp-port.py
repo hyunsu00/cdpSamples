@@ -163,6 +163,7 @@ async def async_full_screenshot(url):
                 "params": {"url": "about:blank"}
             }))
 
+            # Page.navigate 까지 실행
             while True:
                 message = json.loads(await ws.recv())
                 print(f'message : {json.dumps(message)}')
@@ -176,40 +177,65 @@ async def async_full_screenshot(url):
                         "method": "Target.attachToTarget",
                         "params": {"targetId": target_id, "flatten": True}
                     }))
-                # 탭 연결 응답
                 elif message.get('id') == 2 and 'result' in message and 'sessionId' in message['result']:
-                    session_id = message["result"]["sessionId"]
-                    # 페이지 로드
+                    session_id = message["result"]["sessionId"] 
+                    # 이벤트 활성화
                     await ws.send(json.dumps({
                         "id": 3,
+                        "method": "Page.enable",
+                        "sessionId": session_id
+                    }))
+                    # 페이지 로드
+                    await ws.send(json.dumps({
+                        "id": 4,
                         "method": "Page.navigate",
                         "params": {"url": url},
                         "sessionId": session_id
                     }))
+                # Page.enable 응답 (로드 이벤트 대기)
+                elif "method" in message and message["method"] == "Page.loadEventFired":
+                    session_id = message['sessionId']
+                    # 브라우저 크기 설정 (1920x1080)
+                    await ws.send(json.dumps({
+                        "id": 5,
+                        "method": "Emulation.setDeviceMetricsOverride",
+                        "params": {
+                            "width": 1920,
+                            "height": 1080,
+                            "deviceScaleFactor": 1,
+                            "mobile": False
+                        },
+                        "sessionId": session_id
+                    }))
+                    break
+            
+            await asyncio.sleep(2)
 
-                    await asyncio.sleep(2)
-                # 페이지 로드 응답
-                elif message.get('id') == 3 and 'sessionId' in message:
-                    session_id = message["sessionId"]
+            while True:
+                message = json.loads(await ws.recv())
+                print(f'message : {json.dumps(message)}')     
+
+                # 스크롤바 숨기기 응답
+                if message.get('id') == 5 and 'sessionId' in message:
+                    session_id = message['sessionId']
                     # 스크롤바 숨기기
                     await ws.send(json.dumps({
-                        "id": 4,
+                        "id": 6,
                         "method": "Runtime.evaluate",
                         "params": {"expression": "document.body.style.overflow = 'hidden';"},
                         "sessionId": session_id
-                    }))
-                # 스크롤바 숨기기 응답
-                elif message.get('id') == 4 and 'sessionId' in message:
+                    }))    
+                elif message.get('id') == 6 and 'sessionId' in message:
                     session_id = message["sessionId"]
                      # 페이지 높이 가져오기
                     await ws.send(json.dumps({
-                        "id": 5,
+                        "id": 7,
                         "method": "Runtime.evaluate",
                         "params": {"expression": "document.body.scrollHeight"},
                         "sessionId": session_id
                     }))
                 # 페이지 높이 응답
-                elif message.get('id') == 5 and 'result' in message and 'result' in message['result'] and 'value' in message['result']['result']:
+                elif message.get('id') == 7 and 'result' in message and 'result' in message['result'] and 'value' in message['result']['result']:
                     session_id = message["sessionId"]
                     page_height = message["result"]["result"]["value"]
                     # 뷰포트 크기 설정
@@ -222,7 +248,7 @@ async def async_full_screenshot(url):
                         offset = i * viewport_height
                         # 스크롤 이동
                         await ws.send(json.dumps({
-                            "id": 6 + i * 2,
+                            "id": 8 + i * 2,
                             "method": "Runtime.evaluate",
                             "params": {"expression": f"window.scrollTo(0, {offset});", "awaitPromise": True},
                             "sessionId": session_id
@@ -231,7 +257,7 @@ async def async_full_screenshot(url):
 
                         # 스크린샷 촬영
                         await ws.send(json.dumps({
-                            "id": 7 + i * 2,
+                            "id": 9 + i * 2,
                             "method": "Page.captureScreenshot",
                             "params": {"fromSurface": True},
                             "sessionId": session_id
@@ -251,6 +277,7 @@ async def async_full_screenshot(url):
                         current_height += image.height
                 
                     combined_image.save('full_page_screenshot.png')
+                    break
     except Exception as e:
         print(e)
 
