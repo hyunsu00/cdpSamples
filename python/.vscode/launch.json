@@ -20,6 +20,15 @@
             "args": [],
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "screenshot-websocket(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/screenshot-websocket.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

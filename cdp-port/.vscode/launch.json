@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "playwright_screenshot(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/playwright_screenshot.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "cdp-port(Python) 시작",
             "type": "debugpy",
             "request": "launch",

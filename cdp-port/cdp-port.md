@@ -7,7 +7,9 @@
 ```bash
 # rockylinux 8.8
 $ /opt/google/chrome/chrome --remote-debugging-port=9222
+$ /opt/google/chrome/chrome --remote-debugging-port=9222 --headless
 $ /opt/google/chrome/chrome --remote-debugging-port=9222 --remote-allow-origins=*
+$ /opt/google/chrome/chrome --remote-debugging-port=9222 --remote-allow-origins=* --headless
 $ /opt/google/chrome/chrome --remote-debugging-port=9222 
 
 $ /usr/bin/chrome --headless --remote-debugging-port=9222
