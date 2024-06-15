@@ -17,6 +17,11 @@ $ /usr/bin/chrome --headless --remote-debugging-port=9222
 $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222
 $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222 --remote-allow-origins=* 
 $ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-port=9222 --remote-allow-origins=* --headless
+$ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-pipe 3<cdp_pipein 4>cdp_pipeout
+$ /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland \
+--enable-logging --v=1 2>&1 \
+--no-sandbox --disable-gpu --headless \
+--remote-debugging-pipe 3<cdp_pipein 4>cdp_pipeout
 
 PS > "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
 ```

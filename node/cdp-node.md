@@ -95,6 +95,7 @@ async function launchProcess(options) {
   },
   sessionId: "E47AB19684C5C472416A4CDAAA8644D0",
 }
+// Page.captureScreenshot
 {
   id: 42,
   method: "Page.captureScreenshot",
@@ -111,6 +112,31 @@ async function launchProcess(options) {
     captureBeyondViewport: true,
   },
   sessionId: "E47AB19684C5C472416A4CDAAA8644D0",
+}
+// Page.printToPDF
+{
+  id: 23,
+  method: "Page.printToPDF",
+  params: {
+    transferMode: "ReturnAsStream",
+    landscape: false,
+    displayHeaderFooter: false,
+    headerTemplate: "",
+    footerTemplate: "",
+    printBackground: false,
+    scale: 1,
+    paperWidth: 8.27,
+    paperHeight: 11.7,
+    marginTop: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    pageRanges: "",
+    preferCSSPageSize: false,
+    generateTaggedPDF: false,
+    generateDocumentOutline: false,
+  },
+  sessionId: "729ADB640CD3D2B294BA2079A7651997",
 }
 ```
 
@@ -181,3 +207,4 @@ class PipeTransport {
   }
   ...
 }
+```

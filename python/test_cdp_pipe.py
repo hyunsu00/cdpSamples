@@ -1,17 +1,28 @@
 import json
+import os
 
 try:
-    # pipein = open("cdp_pipein", "w")
-    pipeout = open("cdp_pipeout", "r")
-     
-    # Example DevTools Protocol message
     request = json.dumps({"id": 1, "method": "Target.getBrowserContexts"}) + "\n" + "\0"
+    # request = (
+    #     json.dumps(
+    #         {
+    #             "id": 1,
+    #             "method": "Target.createTarget",
+    #             "params": {"url": "about:blank"},
+    #         }
+    #     )
+    #     + "\n"
+    #     + "\0"
+    # )
 
     # Write message to named pipe
-    # pipein.write(request)
+    with open("cdp_pipein", "w") as cdp_pipein:
+        cdp_pipein.write(request)
 
     # Read response from named pipe
-    response = pipeout.readline()
+    with open("cdp_pipeout", "r") as cdp_pipeout:
+        response = cdp_pipeout.readline()
     print("Response: " + response)
+
 except Exception as e:
-    print("[exception][message] : %s", str(e))
+    print("[exception][message] : ", str(e))

@@ -63,7 +63,6 @@ async def HtmlToImage(
         message_id = Counter()
         pipein = open("cdp_pipein", "w")
         pipeout = open("cdp_pipeout", "r")
-
         # 탭 생성
         await send_request_message(
             pipein,
@@ -73,6 +72,7 @@ async def HtmlToImage(
                 "params": {"url": "about:blank"},
             },
         )
+      
         message = await recv_response_message_id(pipeout, message_id.get())
         target_id = message["result"]["targetId"]
 
