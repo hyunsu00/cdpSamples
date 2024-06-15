@@ -29,6 +29,15 @@
             "args": [],
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "cdp_websocket_pdf(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/cdp_websocket_pdf.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }

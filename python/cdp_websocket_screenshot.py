@@ -113,7 +113,9 @@ async def HtmlToImage(
             message = await recv_response_message_id(ws, message_id.get())
             contentWidth = message["result"]["contentSize"]["width"]
             contentHeight = message["result"]["contentSize"]["height"]
-            await asyncio.sleep(10)
+
+            # await asyncio.sleep(5)
+
             # 스크린샷 캡처
             await ws.send(
                 json.dumps(
@@ -147,7 +149,7 @@ async def HtmlToImage(
 
 if __name__ == "__main__":
     start_time = time.time()  # 시작 시간을 측정합니다.
-    asyncio.get_event_loop().run_until_complete(HtmlToImage("https://www.hancom.com"))
+    asyncio.get_event_loop().run_until_complete(HtmlToImage("https://www.naver.com", "cdp_websocket_naver.png", "png"))
     end_time = time.time()  # 종료 시간을 측정합니다.
     elapsed_time = end_time - start_time  # 실행 시간을 계산합니다.
-    logging.info("The code took %s seconds to run.", elapsed_time)
+    logging.info("cdp_websocket_screenshot %s seconds to run.", elapsed_time)
