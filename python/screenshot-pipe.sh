@@ -9,7 +9,7 @@ CHROME_PID=$!
 
 # DevTools 프로토콜 메시지 예제
 
-REQUEST='{"id": 1, "method": "Target.getBrowserContexts"}\0'
+REQUEST='{"id": 1, "method": "Target.getBrowserContexts"}\n\0'
 
 # 명명된 파이프에 메시지 쓰기
 echo -en "$REQUEST" > pipein

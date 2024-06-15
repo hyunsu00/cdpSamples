@@ -13,10 +13,19 @@
             "args": []
         },
         {
-            "name": "screenshot-pipe(Python) 시작",
+            "name": "test_cdp_pipe(Python) 시작",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/screenshot-pipe.py",
+            "program": "${workspaceFolder}/test_cdp_pipe.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "cdp_pipe_screenshot(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/cdp_pipe_screenshot.py",
             "args": [],
             "console": "integratedTerminal",
             "justMyCode": false

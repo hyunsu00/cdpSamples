@@ -29,6 +29,11 @@ def get_websocket_debugger_url(addr: str, port: int) -> str:
     jsonData = json.loads(data)
     return jsonData["webSocketDebuggerUrl"]
 
+async def send_request_message(
+    ws: websockets.WebSocketClientProtocol, message: dict
+) -> None:
+    await ws.send(json.dumps(message))
+
 async def recv_response_message_id(
     ws: websockets.WebSocketClientProtocol, message_id: int
 ) -> dict:
