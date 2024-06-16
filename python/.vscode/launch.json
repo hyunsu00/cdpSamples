@@ -13,10 +13,10 @@
             "args": []
         },
         {
-            "name": "test_cdp_pipe(Python) 시작",
+            "name": "cdp_pipe_connection(Python) 시작",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/test_cdp_pipe.py",
+            "program": "${workspaceFolder}/cdp_pipe_connection.py",
             "args": [],
             "console": "integratedTerminal",
             "justMyCode": false
