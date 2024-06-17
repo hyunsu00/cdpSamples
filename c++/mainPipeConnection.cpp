@@ -5,24 +5,22 @@
 #include <sys/wait.h>
 #include <vector>
 #include <string.h>
+#include <sys/socket.h>
 
 int main() {
     pid_t pid;
-    int fd1[2]; // 첫 번째 파이프: fd 3 (읽기)
-    int fd2[2]; // 두 번째 파이프: fd 4 (쓰기)
-
-    // 첫 번째 파이프 생성 (fd 3용, 읽기)
-    if (pipe(fd1) == -1) {
-        perror("pipe 1");
-        return 1;
+    int fd1[2];  // 소켓 쌍을 저장할 배열
+    int fd2[2];  // 소켓 쌍을 저장할 배열
+    // 소켓 쌍 생성
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd1) == -1) {
+        perror("socketpair failed");
+        exit(EXIT_FAILURE);
     }
-
-    // 두 번째 파이프 생성 (fd 4용, 쓰기)
-    if (pipe(fd2) == -1) {
-        perror("pipe 2");
-        return 1;
+    // 소켓 쌍 생성
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd2) == -1) {
+        perror("socketpair failed");
+        exit(EXIT_FAILURE);
     }
-    printf("fd1[0]: %d, fd1[1]: %d, fd2[0]: %d, fd2[1]: %d\n", fd1[0], fd1[1], fd2[0], fd2[1]);
 
     // 자식 프로세스 생성
     pid = fork();
@@ -31,22 +29,14 @@ int main() {
         perror("fork");
         return 1;
     } else if (pid == 0) {
-        // 자식 프로세스
-        // close(fd1[1]); // 첫 번째 파이프의 쓰기 닫기 (fd 3 읽기)
-        // close(fd2[0]); // 두 번째 파이프의 읽기 닫기 (fd 4 쓰기)
-
-        // fd 3을 첫 번째 파이프의 읽기로 복제
-        if (dup2(fd1[0], 3) == -1) {
-            perror("dup2 fd1");
-            return 1;
+        if (dup2(fd1[0], 3) < 0) {
+            perror("dup2 failed");
+             return 1;
         }
-
-        // fd 4를 두 번째 파이프의 쓰기로 복제
-        if (dup2(fd2[1], 4) == -1) {
-            perror("dup2 fd2");
-            return 1;
+        if (dup2(fd2[1], 4) < 0) {
+            perror("dup2 failed");
+             return 1;
         }
-
         // 원본 파이프의 읽기 닫기 및 필요 없는 파일 디스크립터 닫기
         // close(fd1[0]);
         // close(fd2[1]);
@@ -63,7 +53,7 @@ int main() {
         return 1;
 
     } else {
-        // // 부모 프로세스
+        // 부모 프로세스
         // close(fd1[0]); // 첫 번째 파이프의 읽기 닫기 (fd 3 읽기)
         // close(fd2[1]); // 두 번째 파이프의 쓰기 닫기 (fd 4 쓰기)
 
@@ -72,13 +62,13 @@ int main() {
         const char* Null = R"(\0)";
         write(fd1[1], Null, 1);
 
-        // const size_t BUF_SIZE = 1024;
-        // char buf[BUF_SIZE];
-        // int num_bytes = 0;
-        // while ((num_bytes = read(fd2[0], buf, BUF_SIZE)) > 0) {
-        //     buf[num_bytes] = '\0'; // 문자열 끝을 표시하기 위해 널 문자 추가
-        //     printf("부모 프로세스가 받은 데이터: %s\n", buf);
-        // }
+        const size_t BUF_SIZE = 1024;
+        char buf[BUF_SIZE];
+        int num_bytes = 0;
+        while ((num_bytes = read(fd2[0], buf, BUF_SIZE)) > 0) {
+            buf[num_bytes] = '\0'; // 문자열 끝을 표시하기 위해 널 문자 추가
+            printf("부모 프로세스가 받은 데이터: %s\n", buf);
+        }
 
         // close(fd1[1]); // 첫 번째 파이프의 쓰기 닫기 (fd 3 읽기)
         // close(fd2[0]); // 두 번째 파이프의 읽기 닫기 (fd 4 쓰기)

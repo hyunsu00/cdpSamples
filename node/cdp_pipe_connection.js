@@ -1,10 +1,16 @@
 const { spawn } = require('child_process');
 
-const CHROME_PATH = '/usr/bin/chrome'; // Chrome binary path
+// const CHROME_PATH = '/usr/bin/chrome'; // Chrome binary path
+
+// // Spawn Chrome with the appropriate flags
+// const chrome = spawn(CHROME_PATH, ['--enable-features=UseOzonePlatform', '--ozone-platform=wayland',
+//     '--enable-logging', '--v=2', '--no-sandbox', '--disable-gpu', '--remote-debugging-pipe'], {
+//     stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe']
+// });
+const CHROME_PATH = '/opt/google/chrome/chrome'; // Chrome binary path
 
 // Spawn Chrome with the appropriate flags
-const chrome = spawn(CHROME_PATH, ['--enable-features=UseOzonePlatform', '--ozone-platform=wayland',
-    '--enable-logging', '--v=2', '--no-sandbox', '--disable-gpu', '--remote-debugging-pipe'], {
+const chrome = spawn(CHROME_PATH, ['--enable-logging', '--v=2', '--no-sandbox', '--disable-gpu', '--remote-debugging-pipe'], {
     stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe']
 });
 
