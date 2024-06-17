@@ -4,6 +4,8 @@ import io
 import time
 import base64
 import logging
+import os
+import subprocess
 
 logging.basicConfig(level=logging.DEBUG)  # 로깅 레벨 설정
 
@@ -60,9 +62,18 @@ async def HtmlToImage(
     url: str, path: str = "screenshot.png", format: str = "png"
 ) -> None:
     try:
+        # 파이프 생성
+        r_fd, w_fd = os.pipe()
+        # 프로세스를 실행하고, 파일 디스크립터 3번을 파이프로 연결
+        process = subprocess.Popen(
+            ['/opt/google/chrome/chrome', '--remote-debugging-pipe'], 
+            pass_fds=(w_fd, r_fd)
+        )
+
+        pipein = os.fdopen(w_fd, 'w')
+        pipeout = os.fdopen(r_fd, 'r')
+
         message_id = Counter()
-        pipein = open("cdp_pipein", "w")
-        pipeout = open("cdp_pipeout", "r")
         # 탭 생성
         await send_request_message(
             pipein,

@@ -11,6 +11,10 @@ $ /opt/google/chrome/chrome --remote-debugging-port=9222 --headless
 $ /opt/google/chrome/chrome --remote-debugging-port=9222 --remote-allow-origins=*
 $ /opt/google/chrome/chrome --remote-debugging-port=9222 --remote-allow-origins=* --headless
 $ /opt/google/chrome/chrome --remote-debugging-port=9222 
+$ /opt/google/chrome/chrome --remote-debugging-pipe \
+--enable-logging --v=2 2>&1 \
+--no-sandbox --disable-gpu --headless \
+3<cdp_pipein 4>cdp_pipeout
 
 $ /usr/bin/chrome --headless --remote-debugging-port=9222
 # wsl ubuntu 22.04

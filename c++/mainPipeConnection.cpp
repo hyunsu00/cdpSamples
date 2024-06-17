@@ -1,88 +1,90 @@
-// chrome_launcher.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <vector>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <vector>
+#include <string.h>
 
 int main() {
-    int pipe_to_chrome[2];  // Pipe to Chrome (fd 3 for reading)
-    int pipe_from_chrome[2];  // Pipe from Chrome (fd 4 for writing)
+    pid_t pid;
+    // int fd1[2]; // 첫 번째 파이프: fd 3 (읽기)
+    // int fd2[2]; // 두 번째 파이프: fd 4 (쓰기)
 
-    // Create the pipes
-    if (pipe(pipe_to_chrome) == -1 || pipe(pipe_from_chrome) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
+    // // 첫 번째 파이프 생성 (fd 3용, 읽기)
+    // if (pipe(fd1) == -1) {
+    //     perror("pipe 1");
+    //     return 1;
+    // }
 
-    // Set pipe ends to non-blocking
-    // fcntl(pipe_to_chrome[0], F_SETFL, O_NONBLOCK);
-    // fcntl(pipe_to_chrome[1], F_SETFL, O_NONBLOCK);
-    // fcntl(pipe_from_chrome[0], F_SETFL, O_NONBLOCK);
-    // fcntl(pipe_from_chrome[1], F_SETFL, O_NONBLOCK);
+    // // 두 번째 파이프 생성 (fd 4용, 쓰기)
+    // if (pipe(fd2) == -1) {
+    //     perror("pipe 2");
+    //     return 1;
+    // }
+    // printf("fd1[0]: %d, fd1[1]: %d, fd2[0]: %d, fd2[1]: %d\n", fd1[0], fd1[1], fd2[0], fd2[1]);
 
-    // Fork a new process
-    pid_t pid = fork();
-    if (pid < 0) {
+    // 자식 프로세스 생성
+    pid = fork();
+
+    if (pid == -1) {
         perror("fork");
-        exit(EXIT_FAILURE);
-    }
+        return 1;
+    } else if (pid == 0) {
+        // // 자식 프로세스
+        // close(fd1[1]); // 첫 번째 파이프의 쓰기 닫기 (fd 3 읽기)
+        // close(fd2[0]); // 두 번째 파이프의 읽기 닫기 (fd 4 쓰기)
 
-    if (pid == 0) {
-        // Child process
+        // // fd 3을 첫 번째 파이프의 읽기로 복제
+        // if (dup2(fd1[0], 3) == -1) {
+        //     perror("dup2 fd1");
+        //     return 1;
+        // }
 
-        // Duplicate the file descriptors to fd 3 and fd 4
-        if (dup2(pipe_to_chrome[0], 3) == -1 || dup2(pipe_from_chrome[1], 4) == -1) {
-            perror("dup2");
-            exit(EXIT_FAILURE);
-        }
+        // // fd 4를 두 번째 파이프의 쓰기로 복제
+        // if (dup2(fd2[1], 4) == -1) {
+        //     perror("dup2 fd2");
+        //     return 1;
+        // }
 
-        // Close original pipe file descriptors in the child process
-        close(pipe_to_chrome[0]);
-        close(pipe_to_chrome[1]);
-        close(pipe_from_chrome[0]);
-        close(pipe_from_chrome[1]);
+        // // 원본 파이프의 읽기 닫기 및 필요 없는 파일 디스크립터 닫기
+        // close(fd1[0]);
+        // close(fd2[1]);
 
-        // Execute Chrome with remote debugging pipe
-        execl("/usr/bin/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", 
-            "--enable-logging", "--v=2", "--no-sandbox", "--disable-gpu", "--headless",
-            "--remote-debugging-pipe", NULL);
+        // 프로그램과 인자 실행
+        execlp("/opt/google/chrome/chrome", 
+            "/opt/google/chrome/chrome", 
+            "--remote-debugging-pip", 
+            NULL
+        );
 
-        // If execl fails
-        perror("execl");
-        exit(EXIT_FAILURE);
+        // execlp 실패 시
+        perror("execlp");
+        return 1;
+
     } else {
-        // Parent process
+        // // 부모 프로세스
+        // close(fd1[0]); // 첫 번째 파이프의 읽기 닫기 (fd 3 읽기)
+        // close(fd2[1]); // 두 번째 파이프의 쓰기 닫기 (fd 4 쓰기)
 
-        // Close unused file descriptors in the parent process
-        close(pipe_to_chrome[0]);
-        close(pipe_from_chrome[1]);
+        const char* request = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "https://www.naver.com" })";
+        write(fd1[1], request, strlen(request));
+        const char* Null = R"(\0)";
+        write(fd1[1], Null, 1);
 
-        // Now, pipe_to_chrome[1] (fd 3) is for writing to Chrome
-        // and pipe_from_chrome[0] (fd 4) is for reading from Chrome
+        // const size_t BUF_SIZE = 1024;
+        // char buf[BUF_SIZE];
+        // int num_bytes = 0;
+        // while ((num_bytes = read(fd2[0], buf, BUF_SIZE)) > 0) {
+        //     buf[num_bytes] = '\0'; // 문자열 끝을 표시하기 위해 널 문자 추가
+        //     printf("부모 프로세스가 받은 데이터: %s\n", buf);
+        // }
 
-        // Example: Write a command to Chrome
-        const char* command = "{\"id\": 1, \"method\": \"Target.setDiscoverTargets\", \"params\": {\"discover\": true}}\n";
-        std::vector<char> commandBuffer(strlen(command) + 1, 0 /* zero-initialized */);
-        strcpy(commandBuffer.data(), command);
-        write(pipe_to_chrome[1], commandBuffer.data(), commandBuffer.size());
+        // close(fd1[1]); // 첫 번째 파이프의 쓰기 닫기 (fd 3 읽기)
+        // close(fd2[0]); // 두 번째 파이프의 읽기 닫기 (fd 4 쓰기)
 
-        // Example: Read response from Chrome
-        char buffer[1024] = {0, };
-        ssize_t bytes_read = read(pipe_to_chrome[0], buffer, sizeof(buffer) - 1);
-        if (bytes_read > 0) {
-            buffer[bytes_read] = '\0';
-            printf("Received: %s\n", buffer);
-        }
-
-        // Close the file descriptors when done
-        close(pipe_to_chrome[1]);
-        close(pipe_from_chrome[0]);
-
-        // Wait for the child process to finish
-        wait(NULL);
+        // 자식 프로세스가 종료될 때까지 기다림
+        waitpid(pid, NULL, 0);
     }
 
     return 0;

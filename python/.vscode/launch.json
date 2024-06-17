@@ -47,6 +47,15 @@
             "args": [],
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "playwright_pdf_screenshot(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/playwright_pdf_screenshot.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }
