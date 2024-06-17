@@ -3,6 +3,10 @@
 ```bash
 $ /opt/google/chrome/chrome --headless --remote-debugging-pipe 3<&0 4>&1
 ```
+// 차이점 구분
+execvp
+execlp
+execl
 
 ## 참고
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)

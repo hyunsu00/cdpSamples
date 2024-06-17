@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/build/mainPipeConnection",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
@@ -24,6 +24,35 @@
                 {
                     "description": "디스어셈블리 버전을 Intel(으)로 설정",
                     "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "mainPipeConnection(gdb - fork) 시작",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/mainPipeConnection",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "gdb에 자동 서식 지정 사용",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "디스어셈블리 버전을 Intel(으)로 설정",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "프로세스를 fork하고 exec하는 동안 자식 프로세스를 자동으로 디버깅",
+                    "text": "set follow-fork-mode child",
                     "ignoreFailures": true
                 }
             ]
