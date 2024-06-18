@@ -12,7 +12,7 @@
 REQUEST='{"id": 1, "method": "Target.createTarget", "params": {"url": "https://www.naver.com"}}\n\0'
  
 # 명명된 파이프에 메시지 쓰기
-echo -en "$REQUEST" > FD_3
+echo -en "$REQUEST" > /tmp/FD_3
 
 # # 명명된 파이프에서 응답 읽기
 # read -r RESPONSE < FD_4
