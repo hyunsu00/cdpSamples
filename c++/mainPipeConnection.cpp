@@ -3,7 +3,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <vector>
 #include <string.h>
 #include <fcntl.h>
 
@@ -72,7 +71,7 @@ int main() {
         //     NULL
         // };
         // execvp("/usr/bin/chrome", (char* const*)args);
-        execl("/usr/bin/chrome", "/usr/bin/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
+        execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
 
         // execlp 실패 시
         perror("execlp");
@@ -83,18 +82,18 @@ int main() {
         // close(fd1[0]); // 첫 번째 파이프의 읽기 닫기 (fd 3 읽기)
         // close(fd2[1]); // 두 번째 파이프의 쓰기 닫기 (fd 4 쓰기)
 
-        const char* request = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "https://www.naver.com" })";
+        const char* request = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "https://www.naver.com" }})";
         write(fd1[1], request, strlen(request));
-        const char* Null = R"(\0)";
-        write(fd1[1], Null, 1);
+        const char Null = '\0';
+        write(fd1[1], &Null, 1);
 
-        // const size_t BUF_SIZE = 1024;
-        // char buf[BUF_SIZE];
-        // int num_bytes = 0;
-        // while ((num_bytes = read(fd2[0], buf, BUF_SIZE)) > 0) {
-        //     buf[num_bytes] = '\0'; // 문자열 끝을 표시하기 위해 널 문자 추가
-        //     printf("부모 프로세스가 받은 데이터: %s\n", buf);
-        // }
+        const size_t BUF_SIZE = 1024;
+        char buf[BUF_SIZE];
+        int num_bytes = 0;
+        while ((num_bytes = read(fd2[0], buf, BUF_SIZE)) > 0) {
+            buf[num_bytes] = '\0'; // 문자열 끝을 표시하기 위해 널 문자 추가
+            printf("부모 프로세스가 받은 데이터: %s\n", buf);
+        }
 
         // close(fd1[1]); // 첫 번째 파이프의 쓰기 닫기 (fd 3 읽기)
         // close(fd2[0]); // 두 번째 파이프의 읽기 닫기 (fd 4 쓰기)

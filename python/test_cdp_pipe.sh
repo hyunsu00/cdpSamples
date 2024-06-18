@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # # 명명된 파이프 생성
-# mkfifo pipein pipeout
+# mkfifo /tmp/FD_3 /tmp/FD_4
 
 # # 크롬을 파이프 모드로 실행하고 입출력을 명명된 파이프로 리디렉션
-# /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-pipe 3<pipein 4>pipeout &
+# /usr/bin/chrome --enable-features=UseOzonePlatform --ozone-platform=wayland --remote-debugging-pipe 3</tmp/FD_3 4>/tmp/FD_4 &
 # CHROME_PID=$!
 
 # DevTools 프로토콜 메시지 예제

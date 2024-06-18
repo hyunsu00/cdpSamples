@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 
-const CHROME_PATH = '/usr/bin/chrome'; // Chrome binary path
+const CHROME_PATH = '/home/hyunsu00/dev/chromium/src/out/Debug/chrome'; // Chrome binary path
 
 // Spawn Chrome with the appropriate flags
 const chrome = spawn(CHROME_PATH, ['--enable-features=UseOzonePlatform', '--ozone-platform=wayland',
