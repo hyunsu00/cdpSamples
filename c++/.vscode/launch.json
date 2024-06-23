@@ -5,7 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "mainPipeConnection(gdb) 시작",
+            "name": "mainPipeConnectionWindow(vsdbg) 시작",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/mainPipeConnection.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "mainPipeConnectionLinux(gdb) 시작",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/mainPipeConnection",
@@ -29,7 +40,7 @@
             ]
         },
         {
-            "name": "mainPipeConnection(gdb - fork) 시작",
+            "name": "mainPipeConnectionLinux(gdb - fork) 시작",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/mainPipeConnection",
