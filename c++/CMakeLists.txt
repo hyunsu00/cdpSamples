@@ -6,7 +6,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Configuring for Windows")
 
     # Windows-specific settings
-    add_definitions(-DWINDOWS -DUNICODE)
+    add_definitions(-DWINDOWS)
     set(SOURCES mainPipeConnectionWindow.cpp)
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")

@@ -1,28 +1,10 @@
-#include <windows.h>
+Ôªø#include <windows.h>
 #include <stdio.h>
+#include <vector>
 
-HANDLE hStdOutWr = NULL;
-HANDLE hStdOutRd = NULL;
-HANDLE hStdInWr = NULL;
-HANDLE hStdInRd = NULL;
-HANDLE hCDPOutWr = NULL;
-HANDLE hCDPOutRd = NULL;
-HANDLE hCDPInWr = NULL;
-HANDLE hCDPInRd = NULL;
-HANDLE hProcess = NULL;
-
-#pragma pack(push, 1)  // «ˆ¿Á ∆–≈∑ º≥¡§¿ª Ω∫≈√ø° ¿˙¿Â«œ∞Ì, ∆–≈∑¿ª 1πŸ¿Ã∆Æ∑Œ ∫Ø∞Ê
-typedef struct {
-    INT     number_of_fds;
-    BYTE    crt_flags[5];
-    HANDLE  os_handle[5];
-} STDIO_BUFFER;
-
-typedef struct {
-    INT number_of_fds;
-    BYTE raw_bytes[25];
-} STDIO_BUFFER2;
-#pragma pack(pop)  // ∆–≈∑ º≥¡§¿ª ¿Ã¿¸ ªÛ≈¬(±‚∫ª∞™)∑Œ ∫πø¯
+HANDLE fd3[2] = { NULL, NULL };
+HANDLE fd4[2] = { NULL, NULL };
+HANDLE ghProcess = NULL;
 
 int init(wchar_t* pwszCmdline, int aboolSerializable) {
     // Set up the security attributes struct.
@@ -31,62 +13,43 @@ int init(wchar_t* pwszCmdline, int aboolSerializable) {
     sa.bInheritHandle = TRUE;
     sa.lpSecurityDescriptor = NULL;
 
-    // Create stdout and stderr pipe.
-    if (!CreatePipe(&hStdOutRd, &hStdOutWr, &sa, 0)) {
-        return -2;
-    }
-
-    // Create stdin pipe.
-    if (!CreatePipe(&hStdInRd, &hStdInWr, &sa, 0)) {
-        return -2;
-    }
-
     // Create CDP output pipe.
-    if (!CreatePipe(&hCDPOutRd, &hCDPOutWr, &sa, 1024 * 1024)) {
+    if (!::CreatePipe(&fd3[0], &fd3[1], &sa, 0)) {
         return -2;
     }
 
     // Create CDP input pipe.
-    if (!CreatePipe(&hCDPInRd, &hCDPInWr, &sa, 0)) {
+    if (!::CreatePipe(&fd4[0], &fd4[1], &sa, 0)) {
         return -2;
     }
 
-    // Fill the special structure for passing arbitrary pipes (i.e. fds) to a process
-    STDIO_BUFFER pipes;
-    pipes.number_of_fds = 5;
-    pipes.os_handle[0] = NULL;
-    pipes.os_handle[1] = NULL;
-    pipes.os_handle[2] = NULL;
-    pipes.os_handle[3] = hCDPInRd;
-    pipes.os_handle[4] = hCDPOutWr;
+    const int FD_COUNT = 5;
+    BYTE flags[FD_COUNT] = { 0x41, 0x41, 0x41, 0x09, 0x09 };  
+    HANDLE fds[FD_COUNT] = { NULL, NULL, NULL, fd3[0], fd4[1] };
 
-    pipes.crt_flags[0] = 0x41;
-    pipes.crt_flags[1] = 0x41;
-    pipes.crt_flags[2] = 0x41;
-    pipes.crt_flags[3] = 0x09;
-    pipes.crt_flags[4] = 0x09;
-
-    STDIO_BUFFER2 pipes2;
-    pipes2.number_of_fds = pipes.number_of_fds;
-
-    // Copy data to raw_bytes
-    memcpy(pipes2.raw_bytes, &pipes.number_of_fds, sizeof(pipes.number_of_fds));
-    memcpy(pipes2.raw_bytes + 5, &pipes.os_handle[0], sizeof(pipes.os_handle));
+    std::vector<BYTE> buffer(sizeof(FD_COUNT) + sizeof(flags) + sizeof(fds), 0);
+    
+    // FD count ÏÑ§Ï†ï
+    memcpy(&buffer[0], &FD_COUNT, sizeof(FD_COUNT));
+    // FD flag ÏÑ§Ï†ï
+    memcpy(&buffer[sizeof(FD_COUNT)], &flags, sizeof(flags));
+    // FD handle ÏÑ§Ï†ï
+    memcpy(&buffer[sizeof(FD_COUNT) + sizeof(flags)], &fds[0], sizeof(fds));
 
     // Set up the start up info struct.
     STARTUPINFOW si = {0, };
     si.cb = sizeof(STARTUPINFOW);
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-    si.hStdOutput = hStdOutWr;
-    si.hStdInput = hStdInRd;
-    si.hStdError = hStdOutWr;
+    si.hStdOutput = NULL;
+    si.hStdInput = NULL;
+    si.hStdError = NULL;
     si.wShowWindow = SW_SHOWDEFAULT;
-    si.cbReserved2 = sizeof(pipes);
-    si.lpReserved2 = (LPBYTE)&pipes;
+    si.cbReserved2 = (WORD)buffer.size();
+    si.lpReserved2 = (LPBYTE)&buffer[0];
 
     // Create the child process.
     PROCESS_INFORMATION pi = {0, };
-    if (!CreateProcessW(NULL,   // No module name (use command line)
+    if (!::CreateProcessW(NULL,   // No module name (use command line)
         pwszCmdline,            // Command line
         &sa,                    // Process handle not inheritable
         &sa,                    // Thread handle not inheritable
@@ -101,73 +64,26 @@ int init(wchar_t* pwszCmdline, int aboolSerializable) {
     }
 
     // Wait until child process exits.
-    // WaitForSingleObject(pi.hProcess, INFINITE);
+    // ::WaitForSingleObject(pi.hProcess, INFINITE);
 
     // Close handles that are no longer needed.
-    CloseHandle(hStdOutWr);
-    CloseHandle(hStdInRd);
-    CloseHandle(hCDPOutWr);
-    CloseHandle(hCDPInRd);
+    ::CloseHandle(fd3[0]);
+    ::CloseHandle(fd4[1]);
 
     // Store process handle.
-    hProcess = pi.hProcess;
+    ghProcess = pi.hProcess;
 
     return 0;
 }
 
-int start_chrome() {
-    STARTUPINFOW si;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&pi, sizeof(pi));
-
-    // Command line for Chrome
-    wchar_t szCmdline[] = L"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-
-    // Start the child process.
-    if (!CreateProcessW(NULL,   // No module name (use command line)
-        szCmdline,        // Command line
-        NULL,             // Process handle not inheritable
-        NULL,             // Thread handle not inheritable
-        FALSE,            // Set handle inheritance to FALSE
-        0,                // No creation flags
-        NULL,             // Use parent's environment block
-        NULL,             // Use parent's starting directory 
-        &si,              // Pointer to STARTUPINFO structure
-        &pi)              // Pointer to PROCESS_INFORMATION structure
-    ) {
-        return -1;
-    }
-
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    // Close process and thread handles.
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-    return 0;
-}
-
-void cleanup() {
-/*
-    CloseHandle(hStdOutRd);
-    CloseHandle(hStdOutWr);
-    CloseHandle(hStdInRd);
-    CloseHandle(hStdInWr);
-
-    CloseHandle(hCDPOutRd);
-    CloseHandle(hCDPOutWr);
-    CloseHandle(hCDPInRd);
-    CloseHandle(hCDPInWr);
-
-    CloseHandle(hProcess);
-*/
+void cleanup() 
+{
+    ::CloseHandle(fd3[1]);
+    ::CloseHandle(fd4[0]);
+    ::CloseHandle(ghProcess);
 }
 
 int main() {
-# if 1
     // Initialize pipes and start the Chromium process
     wchar_t szCmdline[] = L"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe --remote-debugging-pipe --enable-automation --enable-logging";
     int result = init(szCmdline, 0);  // replace with the actual path to Chromium
@@ -180,33 +96,29 @@ int main() {
     const char* request = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "https://www.naver.com" }})";
     const char Null = '\0';
     DWORD written;
-    if (!WriteFile(hCDPInWr, request, (DWORD)strlen(request), &written, NULL)) {
+    if (!::WriteFile(fd3[1], request, (DWORD)strlen(request), &written, NULL)) {
         fprintf(stderr, "Failed to write to pipe\n");
         cleanup();
         return 1;
     }
-    if (!WriteFile(hCDPInWr, &Null, 1, &written, NULL)) {
+    if (!::WriteFile(fd3[1], &Null, 1, &written, NULL)) {
         fprintf(stderr, "Failed to write to pipe\n");
         cleanup();
         return 1;
     }
 
     // Read output from the Chromium process
-/*
     char buffer[1024] = { 0, };
     DWORD read;
-    if (!ReadFile(hCDPOutRd, buffer, sizeof(buffer) - 1, &read, NULL) || read == 0) {
+    if (!::ReadFile(fd4[0], buffer, sizeof(buffer) - 1, &read, NULL) || read == 0) {
         fprintf(stderr, "Failed to read from pipe\n");
         cleanup();
         return 1;
     }
     buffer[read] = '\0';
     printf("Output from process: %s\n", buffer);
-*/
+
     // Cleanup handles
     cleanup();
-#else
-    start_chrome();
-#endif
     return 0;
 }
