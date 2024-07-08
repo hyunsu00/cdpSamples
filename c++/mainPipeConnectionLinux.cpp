@@ -61,7 +61,7 @@ int main() {
 
         // 프로그램과 인자 실행
         // const char* args[] = {
-        //     "/usr/bin/chrome",
+        //     "/home/hyunsu00/dev/chromium/src/out/Debug/chrome",
         //     "--enable-features=UseOzonePlatform",
         //     "--ozone-platform=wayland",
         //     "--enable-logging",
@@ -70,8 +70,9 @@ int main() {
         //     "--remote-debugging-pip",
         //     NULL
         // };
-        // execvp("/usr/bin/chrome", (char* const*)args);
-        execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
+        // execvp("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", (char* const*)args);
+        execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
+        // execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
 
         // execlp 실패 시
         perror("execlp");
