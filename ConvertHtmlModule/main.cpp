@@ -164,7 +164,7 @@ int main() {
         perror("pipe 1");
         return 1;
     }
-    // fd3 파이프 생성 (fd 3용, 읽기 / 쓰기)
+    // fd4 파이프 생성 (fd 3용, 읽기 / 쓰기)
     if (pipe(fd4) == -1) {
         perror("pipe 1");
         return 1;
@@ -214,6 +214,9 @@ int main() {
         close(fd3[0]); // fd3 읽기 닫기
         close(fd4[1]); // fd4 쓰기 닫기
 
+        // int status;
+        // waitpid(pid, &status, 0);
+        
         // 탭 생성
         std::string message = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "about:blank" }})";
         bool result = _send_request_message(fd3[1], message);
@@ -284,7 +287,7 @@ int main() {
             {
                 "id": 5,
                 "method": "Page.navigate",
-                "params": {"url": "https://www.naver.com"},
+                "params": {"url": "file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html"},
                 "sessionId": "${sessionId}"
             }
         )";
@@ -296,7 +299,7 @@ int main() {
 
         rmessage = _wait_for_page_load(fd4[0]);
 
-# if 0
+# if 1
         // 레이아웃 메트릭스 가져오기
         message = R"(
             {
@@ -315,7 +318,7 @@ int main() {
         int contentHeight = rmessage["result"]["contentSize"]["height"].get<int>();
 
         // 10초간 일시 중지한다.
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        // std::this_thread::sleep_for(std::chrono::seconds(10));
         
         // 스크린샷 캡처
         message = R"(
@@ -350,16 +353,16 @@ int main() {
         }
         result = _send_request_message(fd3[1], message);
         rmessage = _wait_for_message_id(fd4[0], 7);
-        std::string base64Data = rmessage["result"]["data"].get<std::string>();
+        std::string screenshotData = rmessage["result"]["data"].get<std::string>();
         {
-            std::vector<unsigned char> decodedData = base64Decode(base64Data);
-            std::ofstream file("htmlToPng.png", std::ios::binary);
+            std::vector<unsigned char> decodedData = base64Decode(screenshotData);
+            std::ofstream file("screenshot.png", std::ios::binary);
             file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
             file.close();
         }
 #else
         // 10초간 일시 중지한다.
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        // std::this_thread::sleep_for(std::chrono::seconds(10));
         
         // PDF로 인쇄
         // A4 사이즈 (210 x 297 mm)
@@ -405,9 +408,9 @@ int main() {
         }
         result = _send_request_message(fd3[1], message);
         rmessage = _wait_for_message_id(fd4[0], 6);
-        std::string base64Data = rmessage["result"]["data"].get<std::string>();
+        std::string screenshotData = rmessage["result"]["data"].get<std::string>();
         {
-            std::vector<unsigned char> decodedData = base64Decode(base64Data);
+            std::vector<unsigned char> decodedData = base64Decode(screenshotData);
             std::ofstream file("screenshot.pdf", std::ios::binary);
             file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
             file.close();
