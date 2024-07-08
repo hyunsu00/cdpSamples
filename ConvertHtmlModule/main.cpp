@@ -156,6 +156,21 @@ json _wait_for_page_load(int fd)
 }
 
 int main() {
+
+    ConvertHtmlModule::HtmlToImage(
+        L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
+        L"screenshot.png",
+        L"png",
+        0,
+        0,
+        1280,
+        720,
+        1280,
+        720
+    );
+
+
+ # if 0   
     pid_t pid;
     int fd3[2];  // 첫 번째 파이프: fd 3 (읽기)
     int fd4[2];  // 두 번째 파이프: fd 4 (쓰기)
@@ -424,6 +439,8 @@ int main() {
         // 자식 프로세스가 종료될 때까지 기다림
         waitpid(pid, NULL, 0);
     }
+
+#endif // #if 0
 
     return 0;
 }
