@@ -39,13 +39,15 @@ private:
     const std::string Page_enable;
     const std::string Emulation_setDeviceMetricsOverride;
     const std::string Page_navigate;
+
+private:
+    int m_ID;
+    std::string m_SessionID;
+
 private:
     pid_t m_PID;
     int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
     int m_ReadFD; // 첫 번째 파이프: fd 3 (읽기)
-private:
-    int m_ID;
-    std::string m_SessionID;
 }; // class CDP
 
 CDP::CDP()
@@ -104,9 +106,9 @@ CDP::CDP()
         "sessionId": "%s"
     }
 )")
-, m_PID(0)
 , m_ID(0)
 , m_SessionID()
+, m_PID(0)
 {
 }
 
