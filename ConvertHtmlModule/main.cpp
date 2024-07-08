@@ -127,7 +127,7 @@ json _recv_response_message(int fd)
     return rmessage;
 }
 
-json _recv_response_message_id(int fd, int id)
+json _wait_for_message_id(int fd, int id)
 {
     while (true) {
         json rmessage = _recv_response_message(fd);
@@ -217,7 +217,7 @@ int main() {
         // 탭 생성
         std::string message = R"({ "id": 1, "method": "Target.createTarget", "params": { "url": "about:blank" }})";
         bool result = _send_request_message(fd3[1], message);
-        json rmessage = _recv_response_message_id(fd4[0], 1);
+        json rmessage = _wait_for_message_id(fd4[0], 1);
 
         // 탭 연결
         message = R"(
@@ -296,6 +296,7 @@ int main() {
 
         rmessage = _wait_for_page_load(fd4[0]);
 
+# if 0
         // 레이아웃 메트릭스 가져오기
         message = R"(
             {
@@ -309,7 +310,7 @@ int main() {
             message.replace(pos, strlen("${sessionId}"), session_id);
         }
         result = _send_request_message(fd3[1], message);
-        rmessage = _recv_response_message_id(fd4[0], 6);
+        rmessage = _wait_for_message_id(fd4[0], 6);
         int contentWidth = rmessage["result"]["contentSize"]["width"].get<int>();
         int contentHeight = rmessage["result"]["contentSize"]["height"].get<int>();
 
@@ -348,15 +349,70 @@ int main() {
             message.replace(pos, strlen("${contentHeight}"), std::to_string(contentHeight));
         }
         result = _send_request_message(fd3[1], message);
-        rmessage = _recv_response_message_id(fd4[0], 7);
-        std::string screenshotData = rmessage["result"]["data"].get<std::string>();
+        rmessage = _wait_for_message_id(fd4[0], 7);
+        std::string base64Data = rmessage["result"]["data"].get<std::string>();
         {
-            std::vector<unsigned char> decodedData = base64Decode(screenshotData);
+            std::vector<unsigned char> decodedData = base64Decode(base64Data);
             std::ofstream file("htmlToPng.png", std::ios::binary);
             file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
             file.close();
         }
-
+#else
+        // 10초간 일시 중지한다.
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        
+        // PDF로 인쇄
+        // A4 사이즈 (210 x 297 mm)
+        const float PAPER_WIDTH = 8.27F;
+        const float PAPER_HEIGHT = 11.7F;
+        message = R"(
+            {
+                "id": 6,
+                "method": "Page.printToPDF",
+                "params": {
+                    "landscape": false,
+                    "displayHeaderFooter": false,
+                    "printBackground": false,
+                    "scale": 1,
+                    "paperWidth": ${PAPER_WIDTH},
+                    "paperHeight": ${PAPER_HEIGHT},
+                    "marginTop": 0.4,
+                    "marginBottom": 0.4,
+                    "marginLeft": 0.4,
+                    "marginRight": 0.4,
+                    "pageRanges": "",
+                    "headerTemplate": "",
+                    "footerTemplate": "",
+                    "preferCSSPageSize": false,
+                    "transferMode": "ReturnAsBase64",
+                    "generateTaggedPDF": false,
+                    "generateDocumentOutline": false
+                },
+                "sessionId": "${sessionId}"
+            }
+        )";
+        pos = message.find("${sessionId}");
+        if(pos != std::string::npos) {
+            message.replace(pos, strlen("${sessionId}"), session_id);
+        }
+        pos = message.find("${PAPER_WIDTH}");
+        if(pos != std::string::npos) {
+            message.replace(pos, strlen("${PAPER_WIDTH}"), std::to_string(PAPER_WIDTH));
+        }
+        pos = message.find("${PAPER_HEIGHT}");
+        if(pos != std::string::npos) {
+            message.replace(pos, strlen("${PAPER_HEIGHT}"), std::to_string(PAPER_HEIGHT));
+        }
+        result = _send_request_message(fd3[1], message);
+        rmessage = _wait_for_message_id(fd4[0], 6);
+        std::string base64Data = rmessage["result"]["data"].get<std::string>();
+        {
+            std::vector<unsigned char> decodedData = base64Decode(base64Data);
+            std::ofstream file("screenshot.pdf", std::ios::binary);
+            file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
+            file.close();
+        }
+#endif
         // fd3 쓰기 닫기
         close(fd3[1]);
         // fd4 읽기 닫기
