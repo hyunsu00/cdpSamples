@@ -143,11 +143,12 @@ json _wait_for_message_id(int fd, int id)
 
 json _wait_for_page_load(int fd)
 {
-     while (true) {
+    while (true) {
         json rmessage = _recv_response_message(fd);
         if (rmessage.contains("error")) {
             return rmessage;
         } else if (rmessage["method"] == "Page.loadEventFired") {
+        // } else if (rmessage["method"] == "Page.frameStoppedLoading") {
             return rmessage;
         } else {
             continue;
@@ -157,7 +158,7 @@ json _wait_for_page_load(int fd)
 
 int main() {
 
-#if 0
+#if 1
     ConvertHtmlModule::HtmlToImage(
         L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
         L"screenshot.png",
@@ -169,9 +170,14 @@ int main() {
         -1,
         -1
     );
-#endif
 
- # if 1   
+    ConvertHtmlModule::HtmlToPdf(
+        L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
+        L"screenshot.pdf",
+        L"",
+        0
+    );
+#else  
     pid_t pid;
     int fd3[2];  // 첫 번째 파이프: fd 3 (읽기)
     int fd4[2];  // 두 번째 파이프: fd 4 (쓰기)

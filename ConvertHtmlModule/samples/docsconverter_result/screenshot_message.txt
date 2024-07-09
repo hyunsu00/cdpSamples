@@ -1,0 +1,1831 @@
+[CDP::_SendCommand()] : {
+    "id": 1,
+    "method": "Target.createTarget",
+    "params": {
+        "url": "about:blank"
+    }
+}
+[0709/235708.391019:WARNING:chrome_main_linux.cc(80)] Read channel stable from /opt/google/chrome/CHROME_VERSION_EXTRA
+[_recv_response_message()] : {
+    "id": 1,
+    "result": {
+        "targetId": "A30BFF301F6786333C3A66F303D4397E"
+    }
+}
+[CDP::_SendCommand()] : {
+    "id": 2,
+    "method": "Target.attachToTarget",
+    "params": {
+        "flatten": true,
+        "targetId": "A30BFF301F6786333C3A66F303D4397E"
+    }
+}
+[_recv_response_message()] : {
+    "method": "Target.attachedToTarget",
+    "params": {
+        "sessionId": "896BE4B6CEEF981ECA882C1678C11488",
+        "targetInfo": {
+            "attached": true,
+            "browserContextId": "B4B42EF5B326D309004EB16892D023E4",
+            "canAccessOpener": false,
+            "targetId": "A30BFF301F6786333C3A66F303D4397E",
+            "title": "",
+            "type": "page",
+            "url": "about:blank"
+        },
+        "waitingForDebugger": false
+    }
+}
+[CDP::_SendCommand()] : {
+    "id": 3,
+    "method": "Page.enable",
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[CDP::_SendCommand()] : {
+    "id": 4,
+    "method": "Emulation.setDeviceMetricsOverride",
+    "params": {
+        "deviceScaleFactor": 1,
+        "height": 720,
+        "mobile": false,
+        "screenHeight": 720,
+        "screenOrientation": {
+            "angle": 0,
+            "type": "landscapePrimary"
+        },
+        "screenWidth": 1280,
+        "width": 1280
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[CDP::_SendCommand()] : {
+    "id": 5,
+    "method": "Page.navigate",
+    "params": {
+        "url": "https://www.naver.com"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "A30BFF301F6786333C3A66F303D4397E"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "id": 5,
+    "result": {
+        "frameId": "A30BFF301F6786333C3A66F303D4397E",
+        "loaderId": "D85A29AC4D3E779941CF937E9E3A9357"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[1173934:7:0709/235709.968687:ERROR:command_buffer_proxy_impl.cc(132)] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[1174001:10:0709/235709.969786:ERROR:command_buffer_proxy_impl.cc(325)] GPU state invalid after WaitForGetOffsetInRange.
+[1173987:10:0709/235709.971517:ERROR:command_buffer_proxy_impl.cc(325)] GPU state invalid after WaitForGetOffsetInRange.
+[1173960:7:0709/235709.980731:ERROR:command_buffer_proxy_impl.cc(132)] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[_recv_response_message()] : {
+    "id": 3,
+    "result": {},
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "id": 4,
+    "result": {},
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none"
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "A30BFF301F6786333C3A66F303D4397E",
+            "loaderId": "D85A29AC4D3E779941CF937E9E3A9357",
+            "mimeType": "text/html",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://www.naver.com",
+            "url": "https://www.naver.com/"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.domContentEventFired",
+    "params": {
+        "timestamp": 1207499.566892
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "339F469786F5487562E6B23766225240",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 50733,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 50975,
+                    "functionName": "n",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 54195,
+                    "functionName": "r.Tt",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 38871,
+                    "functionName": "t",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 53327,
+                    "functionName": "r",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 32803,
+                    "functionName": "t",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 63432,
+                    "functionName": "n",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 78629,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 78654,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "33",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sentry-bundle-1.0.1.js"
+                },
+                {
+                    "columnNumber": 10000,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "32",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-logger.js"
+                },
+                {
+                    "columnNumber": 9784,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "32",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-logger.js"
+                },
+                {
+                    "columnNumber": 217344,
+                    "functionName": "l",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 217132,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 217769,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223351,
+                    "functionName": "i",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223542,
+                    "functionName": "a",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "339F469786F5487562E6B23766225240"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "339F469786F5487562E6B23766225240",
+            "loaderId": "5F3C5E34B6852411C77930BD6D94FB50",
+            "mimeType": "text/html",
+            "name": "",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "339F469786F5487562E6B23766225240"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameDetached",
+    "params": {
+        "frameId": "339F469786F5487562E6B23766225240",
+        "reason": "remove"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.loadEventFired",
+    "params": {
+        "timestamp": 1207499.628722
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[CDP::_SendCommand()] : {
+    "id": 6,
+    "method": "Page.getLayoutMetrics",
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "A30BFF301F6786333C3A66F303D4397E"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "3064148D6C3BF58F08A4DF8D070A8D28",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 660063,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660215,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 660183,
+                    "functionName": "yl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 659830,
+                    "functionName": "bl",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 672526,
+                    "functionName": "Vs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 704186,
+                    "functionName": "t.unstable_runWithPriority",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 616174,
+                    "functionName": "Wi",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 670690,
+                    "functionName": "Es",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666801,
+                    "functionName": "hs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 663932,
+                    "functionName": "ds",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 680016,
+                    "functionName": "Xs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681402,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666954,
+                    "functionName": "gs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681387,
+                    "functionName": "rc",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 688835,
+                    "functionName": "t.render",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 571342,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "3064148D6C3BF58F08A4DF8D070A8D28"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "AD6CD6823AEEAF02C286461012F901EF",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 89170,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 91224,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 90786,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 84977,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 82235,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 96197,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202394,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 95407,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202159,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 674066,
+                    "functionName": "Vs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 704186,
+                    "functionName": "t.unstable_runWithPriority",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 616174,
+                    "functionName": "Wi",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 670690,
+                    "functionName": "Es",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666801,
+                    "functionName": "hs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 663932,
+                    "functionName": "ds",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 680016,
+                    "functionName": "Xs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681402,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666954,
+                    "functionName": "gs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681387,
+                    "functionName": "rc",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 688835,
+                    "functionName": "t.render",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 571342,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "AD6CD6823AEEAF02C286461012F901EF"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "AD6CD6823AEEAF02C286461012F901EF",
+            "loaderId": "B29B32CB825ED151E4D4FD9BCBFBC2E6",
+            "mimeType": "text/html",
+            "name": "da_public_left_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameScheduledNavigation",
+    "params": {
+        "delay": 0,
+        "frameId": "AD6CD6823AEEAF02C286461012F901EF",
+        "reason": "scriptInitiated",
+        "url": "https://siape.veta.naver.com/fxshow?su=SU10868&nrefreshx=0#frameId=da_public_left_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=3188767597.900638&isFluid=false&runtime=NDPSDK"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "AD6CD6823AEEAF02C286461012F901EF"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameClearedScheduledNavigation",
+    "params": {
+        "frameId": "AD6CD6823AEEAF02C286461012F901EF"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 89170,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 91224,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 90786,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 84977,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 82235,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 96197,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202394,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 95407,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202159,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 674066,
+                    "functionName": "Vs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 704186,
+                    "functionName": "t.unstable_runWithPriority",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 616174,
+                    "functionName": "Wi",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 670690,
+                    "functionName": "Es",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666801,
+                    "functionName": "hs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 663932,
+                    "functionName": "ds",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 680016,
+                    "functionName": "Xs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681402,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666954,
+                    "functionName": "gs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681387,
+                    "functionName": "rc",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 688835,
+                    "functionName": "t.render",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 571342,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "F8C6297620A25FCE4347FD8820BE4955",
+            "loaderId": "116BA679D59418823D60216CA1DCFEB4",
+            "mimeType": "text/html",
+            "name": "da_public_right_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameScheduledNavigation",
+    "params": {
+        "delay": 0,
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955",
+        "reason": "scriptInitiated",
+        "url": "https://siape.veta.naver.com/fxshow?su=SU10869&nrefreshx=0#frameId=da_public_right_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=2772057661.914616&isFluid=false&runtime=NDPSDK"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameRequestedNavigation",
+    "params": {
+        "disposition": "currentTab",
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955",
+        "reason": "scriptInitiated",
+        "url": "https://siape.veta.naver.com/fxshow?su=SU10869&nrefreshx=0#frameId=da_public_right_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=2772057661.914616&isFluid=false&runtime=NDPSDK"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameClearedScheduledNavigation",
+    "params": {
+        "frameId": "F8C6297620A25FCE4347FD8820BE4955"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 89170,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 91224,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 90786,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 84977,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 82235,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 96197,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202394,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 95407,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "23",
+                    "url": "https://ssl.pstatic.net/tveta/libs/ndpsdk/prod/ndp-core.js"
+                },
+                {
+                    "columnNumber": 202159,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 674066,
+                    "functionName": "Vs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 704186,
+                    "functionName": "t.unstable_runWithPriority",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 616174,
+                    "functionName": "Wi",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 670690,
+                    "functionName": "Es",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666801,
+                    "functionName": "hs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 663932,
+                    "functionName": "ds",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 680016,
+                    "functionName": "Xs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681402,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 666954,
+                    "functionName": "gs",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 681387,
+                    "functionName": "rc",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 688835,
+                    "functionName": "t.render",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                },
+                {
+                    "columnNumber": 571342,
+                    "functionName": "",
+                    "lineNumber": 1,
+                    "scriptId": "25",
+                    "url": "https://pm.pstatic.net/resources/js/main.9ae1516f.js?o=www"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "AD02BC54DBDCFBE921B73CBE21D8F467",
+            "loaderId": "162D11C0069F001C30EC5A7CC900C58E",
+            "mimeType": "text/html",
+            "name": "veta_time2_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameScheduledNavigation",
+    "params": {
+        "delay": 0,
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467",
+        "reason": "scriptInitiated",
+        "url": "https://siape.veta.naver.com/fxshow?su=SU10870&nrefreshx=0#frameId=veta_time2_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=1316280534.8991673&isFluid=false&runtime=NDPSDK"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameClearedScheduledNavigation",
+    "params": {
+        "frameId": "AD02BC54DBDCFBE921B73CBE21D8F467"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "id": 6,
+    "result": {
+        "contentSize": {
+            "height": 3156,
+            "width": 1340,
+            "x": 0,
+            "y": 0
+        },
+        "cssContentSize": {
+            "height": 3156,
+            "width": 1340,
+            "x": 0,
+            "y": 0
+        },
+        "cssLayoutViewport": {
+            "clientHeight": 705,
+            "clientWidth": 1265,
+            "pageX": 0,
+            "pageY": 0
+        },
+        "cssVisualViewport": {
+            "clientHeight": 705,
+            "clientWidth": 1265,
+            "offsetX": 0,
+            "offsetY": 0,
+            "pageX": 0,
+            "pageY": 0,
+            "scale": 1,
+            "zoom": 1
+        },
+        "layoutViewport": {
+            "clientHeight": 705,
+            "clientWidth": 1265,
+            "pageX": 0,
+            "pageY": 0
+        },
+        "visualViewport": {
+            "clientHeight": 705,
+            "clientWidth": 1265,
+            "offsetX": 0,
+            "offsetY": 0,
+            "pageX": 0,
+            "pageY": 0,
+            "scale": 1,
+            "zoom": 1
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[CDP::_SendCommand()] : {
+    "id": 7,
+    "method": "Page.captureScreenshot",
+    "params": {
+        "captureBeyondViewport": true,
+        "clip": {
+            "height": 3156,
+            "scale": 1,
+            "width": 1340,
+            "x": 0,
+            "y": 0
+        },
+        "format": "png"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolatedFeatureDisabled",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "3064148D6C3BF58F08A4DF8D070A8D28",
+            "loaderId": "D975CDC107AE6DDBE5ED964BA5DB8E05",
+            "mimeType": "text/html",
+            "name": "",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://shopsquare.naver.com",
+            "url": "https://shopsquare.naver.com/"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolatedFeatureDisabled",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "AD6CD6823AEEAF02C286461012F901EF",
+            "loaderId": "BA91FB92F3315B5C93E75F182EF37F0F",
+            "mimeType": "text/html",
+            "name": "da_public_left_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://siape.veta.naver.com",
+            "url": "https://siape.veta.naver.com/fxshow?su=SU10868&nrefreshx=0",
+            "urlFragment": "#frameId=da_public_left_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=3188767597.900638&isFluid=false&runtime=NDPSDK"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolatedFeatureDisabled",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "F8C6297620A25FCE4347FD8820BE4955",
+            "loaderId": "01B682D5B28A811F60698A980E0A1528",
+            "mimeType": "text/html",
+            "name": "da_public_right_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://siape.veta.naver.com",
+            "url": "https://siape.veta.naver.com/fxshow?su=SU10869&nrefreshx=0",
+            "urlFragment": "#frameId=da_public_right_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=2772057661.914616&isFluid=false&runtime=NDPSDK"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolatedFeatureDisabled",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "AD02BC54DBDCFBE921B73CBE21D8F467",
+            "loaderId": "D79D432C74EAB60BAA6F920819180345",
+            "mimeType": "text/html",
+            "name": "veta_time2_tgtLREC",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://siape.veta.naver.com",
+            "url": "https://siape.veta.naver.com/fxshow?su=SU10870&nrefreshx=0",
+            "urlFragment": "#frameId=veta_time2_tgtLREC&origin=https%3A%2F%2Fwww.naver.com&msgToken=1316280534.8991673&isFluid=false&runtime=NDPSDK"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameResized",
+    "params": {},
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameResized",
+    "params": {},
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+Created TensorFlow Lite XNNPACK delegate for CPU.
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "BE491DFF92D10D28EDFB26EE20C9BB98",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 24101,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 34376,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 217344,
+                    "functionName": "l",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 217132,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 217769,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223351,
+                    "functionName": "i",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223542,
+                    "functionName": "a",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223601,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 160113,
+                    "functionName": "e",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 223488,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 34454,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 87606,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 116485,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 93387,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 78412,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106469,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106439,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106536,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 111458,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "BE491DFF92D10D28EDFB26EE20C9BB98"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "BE491DFF92D10D28EDFB26EE20C9BB98",
+            "loaderId": "AD76F2726571B3FA06E3CB39FF756023",
+            "mimeType": "text/html",
+            "name": "{\"iFrameId\":\"pc-main-ad-div-p_main_webtoon_tgtLREC\",\"isFluid\":true,\"adm\":\"<div id=\\\"ad-element\\\" class=\\\"gfa_native_topic type_nbanner\\\"><a data-gfp-role=\\\"link\\\" class=\\\"link_area\\\"><div data-gfp-role=\\\"adChoicePos\\\" class=\\\"link_inner\\\"><div class=\\\"thumb_area\\\"><img src=\\\"{%=o.assets[0].image%}\\\" width=\\\"51\\\" height=\\\"34\\\" alt=\\\"{%=o.assets[0].imageAlt%}\\\"></div><div class=\\\"content_area\\\"><strong class=\\\"content_title\\\">{%=o.assets[0].title%}</strong> <span class=\\\"content_context\\\">{%=o.assets[0].desc2%}</span> {% if (o.assets[0].notice) { %}<p class=\\\"content_sub_text\\\">{%=o.assets[0].notice%}</p>{% } %}</div>{% if (o.assets[0].cta) { %}<div class=\\\"content_landing\\\">{%=o.assets[0].cta%}<svg class=\\\"icon_svg\\\" width=\\\"7\\\" height=\\\"12\\\" viewBox=\\\"0 0 7 12\\\"><g fill=\\\"none\\\" fill-rule=\\\"evenodd\\\"><path stroke=\\\"#888\\\" stroke-width=\\\"1.6\\\" d=\\\"m.6 1 5 5-5 5\\\"></path></g></svg></div>{% } %} <i class=\\\"icon_nad\\\" data-gfp-role=\\\"adMarkLegacy\\\"><span class=\\\"blind\\\">AD</span></i></div></a></div><link rel=\\\"stylesheet\\\" href=\\\"https://ssl.pstatic.net/tveta/libs/native_deco/10058/css/gfa_native_topic_new.css\\\"><script type=\\\"text/javascript\\\" src=\\\"https://ssl.pstatic.net/tveta/libs/native_deco/10058/js/gfa_native_topic_new.js\\\" async charset=\\\"utf-8\\\"></script>\",\"sourceOrigin\":\"https://www.naver.com\",\"msgToken\":\"1211427103.5467007\",\"evtType\":\"sf-init\",\"hostMeta\":{\"theme\":\"light\"},\"parInfo\":{\"innerWidth\":1280,\"innerHeight\":720,\"pageXOffset\":0,\"pageYOffset\":0,\"screenWidth\":1280,\"screenHeight\":720,\"bodyClientWidth\":1280,\"bodyClientHeight\":3156},\"adChoice\":{\"mute\":\"https://g.tivan.naver.com/gfa/SEOVyV41Z64COcndFPDrKKC0HE7DTt9u89-qTuyuJg57GVxs6EhjLgN2nRC0ncyktc18tuPRho9inET8FLDOOggXbKbSjBRv3vN3EFyh3yfK4yru-D9PGJt1DJAiGUWCu-cp-tQgp2AyFQELu4bdQNKwuRumAF5ASi0Q0DXq6mjRwxDITQci7LcF2kTIlAAPruJHU3vHQYlao10KCo7hbN2AcjM_I99ZHMHbLyDJk-ToWRcD6gnF9_u_f9mZmiWoh9PUSqoD3GlcAAQr-tcO5u0Je7Ofix0Eyq7mt3JFKRMe4eQ2Zch1oJUoyXkk-4OXEz5lhprJI0n4W8fQorGy1OmRm5J8lh5p5tjn7vVMOo6IjIhalDLwMX8tmHcSyQ9Y6NcDx6TA-tc6OkFucLGLtkB6qjI6cbCN0Gl-Ix0jiJpSrzBN3V05OHn68QDASsYcmMSYfe0KSETPUneF7zuqhPekAmmMW7Uo06UwJP7_mhPTKQYi8D0maUgI_1UDuh3GAMMm5yM8dgtHp8-_qw9IUT3EuhMZ2JCC5pWLuDT0bC7Q0O1gzXznxh3ia2n5lZTVe0-h9UbCYv1VTSe6pPNUQeE7_PCKptFj44-Vr8arSGJ_oRGopWsptx9RkjOZDxRrMdvlYH3-tdEzaZ02Y12fUGGmEb_0dog3Mnq1XzmqP3t-TzuknuodLDqZLCi5j-gOl-wXQPHSvsJ2k1zU69PUMOOj1zNaVhSzpPe847ynQ8sBeJyA11ir9tbCBlK1z0prUX4J0LV2dd7uWb6spJr24AI8sTk0jAkbgKQu-rxHd5umaHBV-tarEXwRfIeC2rdr6P-wb4cZLegcyU346Gm_mFjE4MJCMlieAeojsCY7EBeKPvXaW1SUQQHmfjwD-Gzkiq1rcNKk7O4gtGVD96Aq6OKbySOWV4l_KWy9TCbNsFbD0Ga6FQj_A5r0ZCmy8rke6kuD4ttxT9_kTXb12Sp1JKy3I0EYBqBtsrc6XFt73xVImqINS6lRh_0nK3Ff-A6u1ySVoTOd2xeqkQz5d3-VbPvX3b7Esvj6deeFkK6K3Ka0fCAkjlMYZCQHaExd2_f7yw1iqP-gZqWq4pO5aVQxelAdvijvOoP04v7WFDOaiUX3UzQ2IRmtYFB1gTHgqa0QF2uEZwk9riGiHZKIRP21onwOhnivVaAkk1MY0m5srj96j2pO9YmLZ1y5lvxQrLpahX36d4EwfGaHo8VRqfWBXRnJ_2DpZmeTz_osjUgXViSQWNNmkPiUNCzIE9SWGQBP/?reason=${ADMUTE_REASON}\"},\"adMuteLibUrl\":\"https://ssl.pstatic.net/melona/libs/glad_admute/prod/glad-admute.js\",\"initialAdMuteState\":\"init\",\"creativeType\":\"NATIVE\",\"nativeMeta\":{\"assets\":[{\"key\":0,\"title\":\"추억의 분식점 쫄볶이 맛!\",\"titleLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"image\":\"https://naverpa-phinf.pstatic.net/MjAyNDA3MDVfNTEg/MDAxNzIwMTUzMzAwODIy.bG9pi2rNQDQS_keer8hyqF6nZmV3oP8v4dfCMDZxeoMg.11-lJzzzgVlil6iKhmaCINoYF2izws7MHH2GObM5l24g.JPEG/2_17201533008095296425556449401065.jpg\",\"imageWidth\":342,\"imageHeight\":228,\"imageAlt\":\"광고 이미지\",\"video\":\"\",\"thumbnail\":\"\",\"mediaLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"desc\":\"\",\"desc2\":\"쫄면+밀떡+부산어묵\",\"desc3\":\"\",\"descLink\":null,\"desc2Link\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"desc3Link\":null,\"notice\":\"\",\"noticeBadge\":\"\",\"noticeBadgeLink\":null,\"icon\":null,\"iconAlt\":\"광고 이미지\",\"iconLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"sponsor\":\"\",\"sponsorLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"cta\":\"지금 구매하기\",\"ctaLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"ctaBgColor\":\"#3487BF\",\"badge\":\"AD\",\"sponsorBadge\":\"Sponsored\",\"link\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"promotion\":\"\",\"promotionUrl\":\"\",\"promotion2\":\"\",\"promotion2Url\":\"\",\"promotion2BgColor\":\"\",\"extraImage\":null,\"extraText\":null,\"eventTracking\":null}],\"language\":\"en\"},\"nativeResources\":[{\"type\":\"css\",\"url\":\"https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-native-common.css\"}],\"hasClickHandler\":false,\"shouldAdMuteCacheBurst\":false,\"activateIframeTouch\":false,\"viewableImpressionConfig\":{\"ratio\":0.5,\"ms\":1000},\"crid\":\"20476198\",\"iv\":\"35a30964-aacc-4843-b94e-c595197265e7\"}",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "BE491DFF92D10D28EDFB26EE20C9BB98"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "5A95683B29603D2AFC4B5D7BEB5D4798",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 24101,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 44407,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 87606,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 96652,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 93387,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 79268,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106469,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106439,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106536,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 111458,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "5A95683B29603D2AFC4B5D7BEB5D4798"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "5A95683B29603D2AFC4B5D7BEB5D4798",
+            "loaderId": "9A53246676BC1F18B142E9936E8D7182",
+            "mimeType": "text/html",
+            "name": "{\"iFrameId\":\"ad_timeboard_tgtLREC\",\"isFluid\":true,\"adm\":\"<script src=\\\"https://ssl.pstatic.net/melona/libs/glad/bridge/gfp-bridge.js\\\"></script>\\r\\n\\r\\n<a href=\\\"https://siape.veta.naver.com/fxclick?eu=EU10043565&calp=-&oj=cQgn6aire5MrIXC9%2FsVOjXg2sKEpbhAZ4YiaqTfaMn4OFlTcY0VPwtsLYK%2FEUeEVJL1qM2Pf%2FamRb%2FDhI9r214NBNe2D6VKwcspudKpQEkxsf4XBtOeMJ%2FAm%2Bc%2Fvn9yrewJxNM%2BAWqHIBWexIpibH0plqdgUSG%2BUXrQSw%2B%2FX1bbNCF9%2F110BZDp0hCNKO%2BcHo2M9jEOAPSLbaIdXv9YIFqKzdZWOwZvbXYFLQ7udq9d1bT2501ZKxHZQjbXoq5SOLx%2BDLhsxSYhKyy6dTse9VYNSvxV5zTEA&ac=8987804&src=7156409&br=4544669&evtcd=P901&x_ti=1504&tb=&oid=&sid1=&sid2=&rk=KCcx_Jxo9KEdmF3PyHeYKw&eltts=tjt%2Fo0IBV2kKLuTMsv%2BvbQ%3D%3D&lu=&brs=Y&\\\" id=\\\"ac_banner_a\\\" target=\\\"_blank\\\" style=\\\"display:block\\\">\\r\\n    <img src=\\\"https://ssl.pstatic.net/melona/libs/1501/1501566/db929e4819dd0037d2b8_20240702170316302.jpg\\\" width=\\\"830\\\" height=\\\"130\\\" alt=\\\"[광고]삼성화재 다이렉트 착. 만기 상관없이 자동차보험료 확인하면 스타벅스 아메리카노 2잔 즉시 지급\\\">\\r\\n</a>\\r\\n\\r\\n<script type=\\\"text/javascript\\\" src=\\\"https://ssl.pstatic.net/melona/libs/assets/js/pc/main/min/pc.veta.core.min.js?20240228\\\"></script>\\r\\n<script type=\\\"text/javascript\\\">\\r\\n    (function(ns, bridge) {\\r\\n        var LOG = {\\r\\n            VIEWABLED: \\\"https://siape.veta.naver.com/fxview?eu=EU10043565&calp=-&oj=cQgn6aire5MrIXC9%2FsVOjXg2sKEpbhAZ4YiaqTfaMn4OFlTcY0VPwtsLYK%2FEUeEVJL1qM2Pf%2FamRb%2FDhI9r214NBNe2D6VKwcspudKpQEkxsf4XBtOeMJ%2FAm%2Bc%2Fvn9yrewJxNM%2BAWqHIBWexIpibH0plqdgUSG%2BUXrQSw%2B%2FX1bbNCF9%2F110BZDp0hCNKO%2BcHo2M9jEOAPSLbaIdXv9YIFqKzdZWOwZvbXYFLQ7udq9d1bT2501ZKxHZQjbXoq5SOLx%2BDLhsxSYhKyy6dTse9VYNSvxV5zTEA&ac=8987804&src=7156409&evtcd=V900&x_ti=1504&tb=&oid=&sid1=&sid2=&rk=KCcx_Jxo9KEdmF3PyHeYKw&eltts=tjt%2Fo0IBV2kKLuTMsv%2BvbQ%3D%3D&brs=Y&&eid=V900\\\",\\r\\n            RENDERED: \\\"https://siape.veta.naver.com/fxview?eu=EU10043565&calp=-&oj=cQgn6aire5MrIXC9%2FsVOjXg2sKEpbhAZ4YiaqTfaMn4OFlTcY0VPwtsLYK%2FEUeEVJL1qM2Pf%2FamRb%2FDhI9r214NBNe2D6VKwcspudKpQEkxsf4XBtOeMJ%2FAm%2Bc%2Fvn9yrewJxNM%2BAWqHIBWexIpibH0plqdgUSG%2BUXrQSw%2B%2FX1bbNCF9%2F110BZDp0hCNKO%2BcHo2M9jEOAPSLbaIdXv9YIFqKzdZWOwZvbXYFLQ7udq9d1bT2501ZKxHZQjbXoq5SOLx%2BDLhsxSYhKyy6dTse9VYNSvxV5zTEA&ac=8987804&src=7156410&evtcd=V602&x_ti=1504&tb=&oid=&sid1=&sid2=&rk=KCcx_Jxo9KEdmF3PyHeYKw&eltts=tjt%2Fo0IBV2kKLuTMsv%2BvbQ%3D%3D&brs=Y&&eid=V810\\\"\\r\\n        };\\r\\n\\r\\n        var util = ns.Util ? new ns.Util() : new NBP_CORP.Nimp();\\r\\n        var gladSdkBridge = bridge.createSdkBridge();\\r\\n        var eventList = {};\\r\\n\\r\\n        // 응답노출\\r\\n        util.log(LOG.RENDERED);\\r\\n\\r\\n        // 유효노출\\r\\n        eventList[bridge.EVENT.VIEWABLED] = function() {\\r\\n            util.log(LOG.VIEWABLED);\\r\\n        };\\r\\n\\r\\n        gladSdkBridge.setEventListeners(eventList);\\r\\n    })(\\r\\n        window.naver_corp_da || {},\\r\\n        window.gladBridge\\r\\n    );\\r\\n</script>\",\"sourceOrigin\":\"https://www.naver.com\",\"msgToken\":\"2515405719.0702267\",\"evtType\":\"sf-init\",\"hostMeta\":{\"theme\":\"light\"},\"parInfo\":{\"innerWidth\":1280,\"innerHeight\":720,\"pageXOffset\":0,\"pageYOffset\":0,\"screenWidth\":1280,\"screenHeight\":720,\"bodyClientWidth\":1280,\"bodyClientHeight\":3156},\"adMuteLibUrl\":\"https://ssl.pstatic.net/melona/libs/glad_admute/prod/glad-admute.js\",\"initialAdMuteState\":\"init\",\"creativeType\":\"BANNER\",\"hasClickHandler\":false,\"shouldAdMuteCacheBurst\":false,\"activateIframeTouch\":false}",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "5A95683B29603D2AFC4B5D7BEB5D4798"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameAttached",
+    "params": {
+        "frameId": "4048030379F22403575DE0F5A51EE7F1",
+        "parentFrameId": "A30BFF301F6786333C3A66F303D4397E",
+        "stack": {
+            "callFrames": [
+                {
+                    "columnNumber": 24101,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 44407,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "37",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-ext-nda.js"
+                },
+                {
+                    "columnNumber": 87606,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 96652,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 93387,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 78412,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106469,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106439,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 106536,
+                    "functionName": "value",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                },
+                {
+                    "columnNumber": 111458,
+                    "functionName": "",
+                    "lineNumber": 0,
+                    "scriptId": "28",
+                    "url": "https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-sdk.js"
+                }
+            ]
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStartedLoading",
+    "params": {
+        "frameId": "4048030379F22403575DE0F5A51EE7F1"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameNavigated",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "",
+            "gatedAPIFeatures": [],
+            "id": "4048030379F22403575DE0F5A51EE7F1",
+            "loaderId": "56654D590702B61EC0E55519F0423E82",
+            "mimeType": "text/html",
+            "name": "{\"iFrameId\":\"pc-main-ad-div-p_main_rollingboard_v1_tgtLREC\",\"isFluid\":false,\"adm\":\"<script src=\\\"https://ssl.pstatic.net/melona/libs/glad/bridge/gfp-bridge.js\\\"></script>\\r\\n<link rel=\\\"stylesheet\\\" href=\\\"https://ssl.pstatic.net/melona/libs/assets/css/pc/main/min/main_image_rolling_830.min.css?20221021\\\" />\\r\\n\\r\\n<div class=\\\"image_rolling_area\\\">\\r\\n    <a href=\\\"https://siape.veta.naver.com/fxclick?eu=EU10043564&calp=-&oj=cQgn6aire5OqUKttALv1%2BWyaJ8zQ1ZAAaMkRWcpNPLLwaqMVfs2rj5TVgM0%2B0QyLKeiLaOzCKheMtEckA7TahnJKIxKw984Wq3UtfKZpu0reAJjD5JQtl5%2BdDS4ZdXmrKZODgcUfOgh15wPVdO07U%2BBL%2Bk0gZlaPAQMCMuhPEN27YxT%2FK%2BVHxqW4cwHENzPHIWptTJi1%2Bun6Q03gbIO7AU9SANRnAatvsVQY00Y52lrSBXLlLuiKzHksq5tTslRW1qYNWXGuY5MvV6Hp3yIx%2BNOkcjYTJbXsLtPcXJ6RL6ryf8oaZ0cKepZNNIeTb5Soa0QOPnenAgXsJYWR1jNy%2BA&ac=8982185&src=7138371&br=4536700&evtcd=P901&x_ti=1503&tb=&oid=&sid1=&sid2=&rk=fag-n0QXgooBeDpXfM9Xqg&eltts=tjt%2Fo0IBV2mF0ainfrt8uQ%3D%3D&lu=&brs=Y&\\\" class=\\\"image_rolling_link\\\" target=\\\"_blank\\\">\\r\\n        <div class=\\\"image_area\\\">\\r\\n            <img src=\\\"https://ssl.pstatic.net/melona/libs/1501/1501647/34950f84f01d624a7ec7_20240416144732011.jpg\\\" width=\\\"420\\\" height=\\\"240\\\" alt=\\\"[광고]I PARK CITY 수원 아이파크 시티 선착순 특별분양 아파트, 오피스텔, 단독주택용지 031)222-0557\\\">\\r\\n            <img src=\\\"https://ssl.pstatic.net/melona/libs/1501/1501647/074fc1b6733aaad1082b_20240416144735025.jpg\\\" width=\\\"420\\\" height=\\\"240\\\" alt=\\\"\\\">\\r\\n            <img src=\\\"https://ssl.pstatic.net/melona/libs/1501/1501647/aeb15291bf97ec888843_20240416144738573.jpg\\\" width=\\\"420\\\" height=\\\"240\\\" alt=\\\"\\\">\\r\\n            <img src=\\\"https://ssl.pstatic.net/melona/libs/1501/1501647/be2b095b6e7c1d4eb650_20240416144741699.jpg\\\" width=\\\"420\\\" height=\\\"240\\\" alt=\\\"\\\">\\r\\n        </div>\\r\\n    </a>\\r\\n</div>\\r\\n\\r\\n<script type=\\\"text/javascript\\\" src=\\\"https://ssl.pstatic.net/melona/libs/assets/js/pc/main/min/pc.veta.core.min.js?20240228\\\"></script>\\r\\n<script type=\\\"text/javascript\\\">\\r\\n    (function(ns, bridge) {\\r\\n        var LOG = {\\r\\n            VIEWABLED: \\\"https://siape.veta.naver.com/fxview?eu=EU10043564&calp=-&oj=cQgn6aire5OqUKttALv1%2BWyaJ8zQ1ZAAaMkRWcpNPLLwaqMVfs2rj5TVgM0%2B0QyLKeiLaOzCKheMtEckA7TahnJKIxKw984Wq3UtfKZpu0reAJjD5JQtl5%2BdDS4ZdXmrKZODgcUfOgh15wPVdO07U%2BBL%2Bk0gZlaPAQMCMuhPEN27YxT%2FK%2BVHxqW4cwHENzPHIWptTJi1%2Bun6Q03gbIO7AU9SANRnAatvsVQY00Y52lrSBXLlLuiKzHksq5tTslRW1qYNWXGuY5MvV6Hp3yIx%2BNOkcjYTJbXsLtPcXJ6RL6ryf8oaZ0cKepZNNIeTb5Soa0QOPnenAgXsJYWR1jNy%2BA&ac=8982185&src=7138371&evtcd=V900&x_ti=1503&tb=&oid=&sid1=&sid2=&rk=fag-n0QXgooBeDpXfM9Xqg&eltts=tjt%2Fo0IBV2mF0ainfrt8uQ%3D%3D&brs=Y&&eid=V900\\\",\\r\\n            RENDERED: \\\"https://siape.veta.naver.com/fxview?eu=EU10043564&calp=-&oj=cQgn6aire5OqUKttALv1%2BWyaJ8zQ1ZAAaMkRWcpNPLLwaqMVfs2rj5TVgM0%2B0QyLKeiLaOzCKheMtEckA7TahnJKIxKw984Wq3UtfKZpu0reAJjD5JQtl5%2BdDS4ZdXmrKZODgcUfOgh15wPVdO07U%2BBL%2Bk0gZlaPAQMCMuhPEN27YxT%2FK%2BVHxqW4cwHENzPHIWptTJi1%2Bun6Q03gbIO7AU9SANRnAatvsVQY00Y52lrSBXLlLuiKzHksq5tTslRW1qYNWXGuY5MvV6Hp3yIx%2BNOkcjYTJbXsLtPcXJ6RL6ryf8oaZ0cKepZNNIeTb5Soa0QOPnenAgXsJYWR1jNy%2BA&ac=8982185&src=7138375&evtcd=V602&x_ti=1503&tb=&oid=&sid1=&sid2=&rk=fag-n0QXgooBeDpXfM9Xqg&eltts=tjt%2Fo0IBV2mF0ainfrt8uQ%3D%3D&brs=Y&&eid=V810\\\"\\r\\n        };\\r\\n\\r\\n        var util = ns.Util ? new ns.Util() : new NBP_CORP.Nimp();\\r\\n        var gladSdkBridge = bridge.createSdkBridge();\\r\\n        var eventList = {};\\r\\n\\r\\n        // 응답노출\\r\\n        util.log(LOG.RENDERED);\\r\\n\\r\\n        // 유효노출\\r\\n        eventList[bridge.EVENT.VIEWABLED] = function() {\\r\\n            util.log(LOG.VIEWABLED);\\r\\n        };\\r\\n\\r\\n        gladSdkBridge.setEventListeners(eventList);\\r\\n\\r\\n        window.onload = function() {\\r\\n            document.querySelector('.image_area').classList.add('animation_start');\\r\\n        };\\r\\n    })(\\r\\n        window.naver_corp_da || {},\\r\\n        window.gladBridge\\r\\n    );\\r\\n</script>\",\"sourceOrigin\":\"https://www.naver.com\",\"msgToken\":\"1963877201.9443645\",\"evtType\":\"sf-init\",\"hostMeta\":{\"theme\":\"light\"},\"parInfo\":{\"innerWidth\":1280,\"innerHeight\":720,\"pageXOffset\":0,\"pageYOffset\":0,\"screenWidth\":1280,\"screenHeight\":720,\"bodyClientWidth\":1280,\"bodyClientHeight\":3156},\"adChoice\":{\"mute\":\"https://siape.veta.naver.com/fxblock?evtcd=ADMUTE&p0=${ADMUTE_REASON}&oj=cQgn6aire5OqUKttALv1%2BWyaJ8zQ1ZAAaMkRWcpNPLLwaqMVfs2rj5TVgM0%2B0QyLKeiLaOzCKheMtEckA7TahnJKIxKw984Wq3UtfKZpu0reAJjD5JQtl5%2BdDS4ZdXmrKZODgcUfOgh15wPVdO07U%2BBL%2Bk0gZlaPAQMCMuhPEN27YxT%2FK%2BVHxqW4cwHENzPHIWptTJi1%2Bun6Q03gbIO7AU9SANRnAatvsVQY00Y52lrSBXLlLuiKzHksq5tTslRW1qYNWXGuY5MvV6Hp3yIx%2BNOkcjYTJbXsLtPcXJ6RL6ryf8oaZ0cKepZNNIeTb5Soa0QOPnenAgXsJYWR1jNy%2BA&pe=9tfnX734X6jW6RYbP1TkgWSAYoPnXhaUZUUb89CLkhX1QDHQ3DP8HpsbsrFrtilvXE1yYkn5eeQ&rk=fag-n0QXgooBeDpXfM9Xqg&eltts=tjt%2Fo0IBV2mF0ainfrt8uQ%3D%3D\"},\"adMuteLibUrl\":\"https://ssl.pstatic.net/melona/libs/glad_admute/prod/glad-admute.js\",\"initialAdMuteState\":\"init\",\"creativeType\":\"BANNER\",\"hasClickHandler\":false,\"shouldAdMuteCacheBurst\":false,\"activateIframeTouch\":false}",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "://",
+            "url": "about:blank"
+        },
+        "type": "Navigation"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "4048030379F22403575DE0F5A51EE7F1"
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}
+[_recv_response_message()] : {
+    "method": "Page.documentOpened",
+    "params": {
+        "frame": {
+            "adFrameStatus": {
+                "adFrameType": "none",
+                "explanations": []
+            },
+            "crossOriginIsolatedContextType": "NotIsolated",
+            "domainAndRegistry": "naver.com",
+            "gatedAPIFeatures": [],
+            "id": "BE491DFF92D10D28EDFB26EE20C9BB98",
+            "loaderId": "AD76F2726571B3FA06E3CB39FF756023",
+            "mimeType": "text/html",
+            "name": "{\"iFrameId\":\"pc-main-ad-div-p_main_webtoon_tgtLREC\",\"isFluid\":true,\"adm\":\"<div id=\\\"ad-element\\\" class=\\\"gfa_native_topic type_nbanner\\\"><a data-gfp-role=\\\"link\\\" class=\\\"link_area\\\"><div data-gfp-role=\\\"adChoicePos\\\" class=\\\"link_inner\\\"><div class=\\\"thumb_area\\\"><img src=\\\"{%=o.assets[0].image%}\\\" width=\\\"51\\\" height=\\\"34\\\" alt=\\\"{%=o.assets[0].imageAlt%}\\\"></div><div class=\\\"content_area\\\"><strong class=\\\"content_title\\\">{%=o.assets[0].title%}</strong> <span class=\\\"content_context\\\">{%=o.assets[0].desc2%}</span> {% if (o.assets[0].notice) { %}<p class=\\\"content_sub_text\\\">{%=o.assets[0].notice%}</p>{% } %}</div>{% if (o.assets[0].cta) { %}<div class=\\\"content_landing\\\">{%=o.assets[0].cta%}<svg class=\\\"icon_svg\\\" width=\\\"7\\\" height=\\\"12\\\" viewBox=\\\"0 0 7 12\\\"><g fill=\\\"none\\\" fill-rule=\\\"evenodd\\\"><path stroke=\\\"#888\\\" stroke-width=\\\"1.6\\\" d=\\\"m.6 1 5 5-5 5\\\"></path></g></svg></div>{% } %} <i class=\\\"icon_nad\\\" data-gfp-role=\\\"adMarkLegacy\\\"><span class=\\\"blind\\\">AD</span></i></div></a></div><link rel=\\\"stylesheet\\\" href=\\\"https://ssl.pstatic.net/tveta/libs/native_deco/10058/css/gfa_native_topic_new.css\\\"><script type=\\\"text/javascript\\\" src=\\\"https://ssl.pstatic.net/tveta/libs/native_deco/10058/js/gfa_native_topic_new.js\\\" async charset=\\\"utf-8\\\"></script>\",\"sourceOrigin\":\"https://www.naver.com\",\"msgToken\":\"1211427103.5467007\",\"evtType\":\"sf-init\",\"hostMeta\":{\"theme\":\"light\"},\"parInfo\":{\"innerWidth\":1280,\"innerHeight\":720,\"pageXOffset\":0,\"pageYOffset\":0,\"screenWidth\":1280,\"screenHeight\":720,\"bodyClientWidth\":1280,\"bodyClientHeight\":3156},\"adChoice\":{\"mute\":\"https://g.tivan.naver.com/gfa/SEOVyV41Z64COcndFPDrKKC0HE7DTt9u89-qTuyuJg57GVxs6EhjLgN2nRC0ncyktc18tuPRho9inET8FLDOOggXbKbSjBRv3vN3EFyh3yfK4yru-D9PGJt1DJAiGUWCu-cp-tQgp2AyFQELu4bdQNKwuRumAF5ASi0Q0DXq6mjRwxDITQci7LcF2kTIlAAPruJHU3vHQYlao10KCo7hbN2AcjM_I99ZHMHbLyDJk-ToWRcD6gnF9_u_f9mZmiWoh9PUSqoD3GlcAAQr-tcO5u0Je7Ofix0Eyq7mt3JFKRMe4eQ2Zch1oJUoyXkk-4OXEz5lhprJI0n4W8fQorGy1OmRm5J8lh5p5tjn7vVMOo6IjIhalDLwMX8tmHcSyQ9Y6NcDx6TA-tc6OkFucLGLtkB6qjI6cbCN0Gl-Ix0jiJpSrzBN3V05OHn68QDASsYcmMSYfe0KSETPUneF7zuqhPekAmmMW7Uo06UwJP7_mhPTKQYi8D0maUgI_1UDuh3GAMMm5yM8dgtHp8-_qw9IUT3EuhMZ2JCC5pWLuDT0bC7Q0O1gzXznxh3ia2n5lZTVe0-h9UbCYv1VTSe6pPNUQeE7_PCKptFj44-Vr8arSGJ_oRGopWsptx9RkjOZDxRrMdvlYH3-tdEzaZ02Y12fUGGmEb_0dog3Mnq1XzmqP3t-TzuknuodLDqZLCi5j-gOl-wXQPHSvsJ2k1zU69PUMOOj1zNaVhSzpPe847ynQ8sBeJyA11ir9tbCBlK1z0prUX4J0LV2dd7uWb6spJr24AI8sTk0jAkbgKQu-rxHd5umaHBV-tarEXwRfIeC2rdr6P-wb4cZLegcyU346Gm_mFjE4MJCMlieAeojsCY7EBeKPvXaW1SUQQHmfjwD-Gzkiq1rcNKk7O4gtGVD96Aq6OKbySOWV4l_KWy9TCbNsFbD0Ga6FQj_A5r0ZCmy8rke6kuD4ttxT9_kTXb12Sp1JKy3I0EYBqBtsrc6XFt73xVImqINS6lRh_0nK3Ff-A6u1ySVoTOd2xeqkQz5d3-VbPvX3b7Esvj6deeFkK6K3Ka0fCAkjlMYZCQHaExd2_f7yw1iqP-gZqWq4pO5aVQxelAdvijvOoP04v7WFDOaiUX3UzQ2IRmtYFB1gTHgqa0QF2uEZwk9riGiHZKIRP21onwOhnivVaAkk1MY0m5srj96j2pO9YmLZ1y5lvxQrLpahX36d4EwfGaHo8VRqfWBXRnJ_2DpZmeTz_osjUgXViSQWNNmkPiUNCzIE9SWGQBP/?reason=${ADMUTE_REASON}\"},\"adMuteLibUrl\":\"https://ssl.pstatic.net/melona/libs/glad_admute/prod/glad-admute.js\",\"initialAdMuteState\":\"init\",\"creativeType\":\"NATIVE\",\"nativeMeta\":{\"assets\":[{\"key\":0,\"title\":\"추억의 분식점 쫄볶이 맛!\",\"titleLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"image\":\"https://naverpa-phinf.pstatic.net/MjAyNDA3MDVfNTEg/MDAxNzIwMTUzMzAwODIy.bG9pi2rNQDQS_keer8hyqF6nZmV3oP8v4dfCMDZxeoMg.11-lJzzzgVlil6iKhmaCINoYF2izws7MHH2GObM5l24g.JPEG/2_17201533008095296425556449401065.jpg\",\"imageWidth\":342,\"imageHeight\":228,\"imageAlt\":\"광고 이미지\",\"video\":\"\",\"thumbnail\":\"\",\"mediaLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"desc\":\"\",\"desc2\":\"쫄면+밀떡+부산어묵\",\"desc3\":\"\",\"descLink\":null,\"desc2Link\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"desc3Link\":null,\"notice\":\"\",\"noticeBadge\":\"\",\"noticeBadgeLink\":null,\"icon\":null,\"iconAlt\":\"광고 이미지\",\"iconLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"sponsor\":\"\",\"sponsorLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"cta\":\"지금 구매하기\",\"ctaLink\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"ctaBgColor\":\"#3487BF\",\"badge\":\"AD\",\"sponsorBadge\":\"Sponsored\",\"link\":{\"curl\":\"https://g.tivan.naver.com/gfa/OktOjqmY3zd9g5EABnmRvywlFcOGlT1lf1t6BVM-1g6hYb1zwp2yX1Q03fzILg4waHDYyNK_Hd2kBa93h91hFSILsmcIGrid9i3rx9PgDmpWbKJk3jr4P6bs_HJFdSWlWwRe5hve8qHszftHXYcbSOOt94LOvLarr6H_2SUHKCWfC1udJp1aZ-jZBtHFsD32yWgUjnO344-EWfdPVXKSzgy4iY8EQTTCHdPO45LlF3Wz-ldZhPb3_qmCXD7FFzmBOdR17iWGnF-nn5iP5ia8sTaGRSR76lXfW7ZCWnf7z_8U4Slp4rjdDaaKqS_dTF9xeFsD6uiTUTwY2Fn-w3YPiSdJFFeFrHwNG_YPQrNoIm9Dlki5U8l70iZY7XxLm6HwqI2PweC8xjH9K7wMyMnOxVB1qgKo6eeuv6IckXBaO2ZNSGYkqCvbrcFzGKCMR0sEpji2LGBkNym2v0F5wPJTeDK8tHpfMDrhVRJ01MDJQxMvVzXjseB55Nk4QfDpoDG1MgOynQ0tDRcMR8VwC0yKA6zFaU4s6PqdnicZuk0ZO3HmID4oCngXDM6G64M6nEGzBBEkOhQHGtvczUpTz7mZibhbpGvQYwzQaIoUixhBZYYs4eSEU0VqIfH5sxNlnWdWhscLwpqk3pt2FNwf3g864--bvYGXcPBJ8ZOpAmCTRVCNx3_5tmGeCQcmV8UehwiyWoQI0HyPsW16LMXGXpmMb0cpa8vr_-an3zz1jE9a-0cbmsFDfEWMUrRqd9vXd6M7hWMNZBsnrWlsOCg446tpOOwS-XMBE0BnegFQcfWeVIIXxsSUWy5IjerxZfVqvmFswPysab2M8953Yj4z8GwlauI5ssC991wsAEDi_Zn1mcGB6mGT3bpO9XjJeXXB0D6AFHbNZTVN2NA3V6LWnLhtlGPujqgoqF3auMdcRv_b6aXekqIMks0hE43bHVNQEG-gZOjHkhdjXsoQSsq3EqvQ3RbCN-TePvaHW141ZnmuaLIMtA0xcqraTgKPBc2COf1Oc75Trs0g6xrgEfTlKMik1QF70I5H2SjJMFMRuPEAl6Br6lwb_9utGsXQK2KvGiqfSzrToUMn6OMuTMIXvmh7XmSfJQ6jyyOxa6Pm2L7g_7to4fzsZHE-QZic7D_Yy9liSpU9eyuHy7MQUCdSE9Z1nrOeFUFCw0pdZgICHN45J7CKDu3Reynt3jOpXhBbu9Q2KXaJ5EGl9--oJKvtxa3klBE7CaYO4n2aWobIMfCPuxOzlGIc1m632Q-MIABZiq0ymOiEWiWeveFLybyoSDVSLiZ-ocuH5V_aAs-2OnnkVtqkLixkv5bk6wCsRBtfy3Z1Ms3G9NNqdpybXGq67W721x8VweZlzkWr_LjfsZseDfxpjLBCW1bAtsIPgpO7vjF6xrFDfqZxXYPlarhJ2Q8-L3lLoAQdfMctm9UnDZIQlAk=/\",\"ebp\":1},\"promotion\":\"\",\"promotionUrl\":\"\",\"promotion2\":\"\",\"promotion2Url\":\"\",\"promotion2BgColor\":\"\",\"extraImage\":null,\"extraText\":null,\"eventTracking\":null}],\"language\":\"en\"},\"nativeResources\":[{\"type\":\"css\",\"url\":\"https://ssl.pstatic.net/tveta/libs/glad/prod/2.29.0/gfp-native-common.css\"}],\"hasClickHandler\":false,\"shouldAdMuteCacheBurst\":false,\"activateIframeTouch\":false,\"viewableImpressionConfig\":{\"ratio\":0.5,\"ms\":1000},\"crid\":\"20476198\",\"iv\":\"35a30964-aacc-4843-b94e-c595197265e7\"}",
+            "parentId": "A30BFF301F6786333C3A66F303D4397E",
+            "secureContextType": "Secure",
+            "securityOrigin": "https://www.naver.com",
+            "url": "https://www.naver.com/"
+        }
+    },
+    "sessionId": "896BE4B6CEEF981ECA882C1678C11488"
+}

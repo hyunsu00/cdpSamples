@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(ConvertHtmlModule)
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DDEBUG)
+    add_definitions(-D_DEBUG)
+endif()
+
 # 운영 체제에 따른 분기
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(STATUS "Configuring for Windows")

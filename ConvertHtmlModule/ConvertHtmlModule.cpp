@@ -17,17 +17,22 @@ public:
 
 public:
     bool Launch();
+    void Exit();
     bool Navegate(
         const std::string& url, 
-        const std::pair<int, int>& viewportSize
+        const std::pair<int, int>& viewportSize = std::make_pair(-1, -1)
     );
     bool Screenshot(
         const std::string& resultFilePath,
-        const std::string& imageType,
-        const std::pair<int, int>& clipPos,
-        const std::pair<int, int>& clipSize
+        const std::string& imageType = "png",
+        const std::pair<int, int>& clipPos = std::make_pair(-1, -1),
+        const std::pair<int, int>& clipSize = std::make_pair(-1, -1)
     );
-
+    bool PrintToPDF(
+        const std::string& resultFilePath,
+        double margin = 0.4F,
+        bool landscape = false
+    );
 private:
     bool _SendCommand(const std::string& command);
     bool _RecvCommand(std::string& command);
@@ -52,6 +57,7 @@ private:
     const std::string Page_navigate;
     const std::string Page_getLayoutMetrics;
     const std::string Page_captureScreenshot;
+    const std::string Page_printToPDF;
 
 private:
     int m_ID;
@@ -145,15 +151,44 @@ CDP::CDP()
         "sessionId": "%s"
     }
 )")
+, Page_printToPDF(R"(
+    { 
+        "id": %d, 
+        "method": "Page.printToPDF",
+        "params": {
+            "landscape": %s,
+            "displayHeaderFooter": false,
+            "printBackground": false,
+            "scale": 1,
+            "paperWidth": %f,
+            "paperHeight": %f,
+            "marginTop": %f,
+            "marginBottom": %f,
+            "marginLeft": %f,
+            "marginRight": %f,
+            "pageRanges": "",
+            "headerTemplate": "",
+            "footerTemplate": "",
+            "preferCSSPageSize": false,
+            "transferMode": "ReturnAsBase64",
+            "generateTaggedPDF": false,
+            "generateDocumentOutline": false
+        },
+        "sessionId": "%s"
+    }
+)")
 , m_ID(0)
 , m_TargetID()
 , m_SessionID()
-, m_PID(0)
+, m_PID(-1)
+, m_WriteFD(-1)
+, m_ReadFD(-1)
 {
 }
 
 CDP::~CDP()
 {
+    Exit();
 }
 
 bool CDP::_SendCommand(const std::string& command)
@@ -304,6 +339,7 @@ bool CDP::Launch()
             close(fd4[1]);
         }
         int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
+        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", "--headless", NULL);
 
         if (ret == -1) {
             perror("Error execlp()");
@@ -331,7 +367,28 @@ bool CDP::Launch()
     return true;
 }
 
-bool CDP::Navegate(const std::string& url, const std::pair<int, int>& viewportSize)
+void CDP::Exit()
+{
+    if (m_WriteFD != -1) {
+        close(m_WriteFD);
+    }
+    if (m_ReadFD != -1) {
+        close(m_ReadFD);
+    }
+    if (m_PID != -1) {
+        kill(m_PID, SIGKILL);
+    }
+    m_PID = m_WriteFD = m_ReadFD = -1;
+
+    m_ID = 0;
+    m_TargetID.clear();
+    m_SessionID.clear();
+}
+
+bool CDP::Navegate(
+    const std::string& url, 
+    const std::pair<int, int>& viewportSize /*= std::make_pair(-1, -1)*/
+)
 {
     // 탭 생성
     bool result = _SendCommand(_Format(Target_createTarget, ++m_ID));
@@ -372,7 +429,15 @@ bool CDP::Navegate(const std::string& url, const std::pair<int, int>& viewportSi
     int width = (viewportSize.first == -1) ? DEFAULT_WIDTH : viewportSize.first;
     int height = (viewportSize.second == -1) ? DEFAULT_HEIGHT : viewportSize.second;
     int screenWidth = width, screenHeight = height;
-    result = _SendCommand(_Format(Emulation_setDeviceMetricsOverride, ++m_ID, width, height, screenWidth, screenHeight, sessionId.c_str()));
+    result = _SendCommand(_Format(
+        Emulation_setDeviceMetricsOverride, 
+        ++m_ID, 
+        width, 
+        height, 
+        screenWidth, 
+        screenHeight, 
+        sessionId.c_str()
+    ));
     if (!result) {
         return false;
     }
@@ -395,9 +460,9 @@ bool CDP::Navegate(const std::string& url, const std::pair<int, int>& viewportSi
 
 bool CDP::Screenshot(
     const std::string& resultFilePath,
-    const std::string& imageType,
-    const std::pair<int, int>& clipPos,
-    const std::pair<int, int>& clipSize
+    const std::string& imageType /*= "png"*/,
+    const std::pair<int, int>& clipPos /*= std::make_pair(-1, -1)*/,
+    const std::pair<int, int>& clipSize /*= std::make_pair(-1, -1)*/
 )
 {
     // 레이아웃 메트릭스 가져오기
@@ -419,7 +484,16 @@ bool CDP::Screenshot(
     int clipY = (clipPos.second == -1) ? 0 : clipPos.second;
     int clipWidth = (clipSize.first == -1) ? contentSize.first : clipSize.first;
     int clipHeight = (clipSize.second == -1) ? contentSize.second : clipSize.second;
-    result = _SendCommand(_Format(Page_captureScreenshot, ++m_ID, imageType.c_str(), clipX, clipY, clipWidth, clipHeight, m_SessionID.c_str()));
+    result = _SendCommand(_Format(
+        Page_captureScreenshot, 
+        ++m_ID, 
+        imageType.c_str(), 
+        clipX, 
+        clipY, 
+        clipWidth, 
+        clipHeight, 
+        m_SessionID.c_str()
+    ));
     if (!result) {
         return false;
     }
@@ -427,10 +501,52 @@ bool CDP::Screenshot(
     if (message.empty() || message.contains("error")) {
         return false;
     }
-    std::string screenshotData = message["result"]["data"].get<std::string>();
+    std::string data = message["result"]["data"].get<std::string>();
 
     // 파일로 저장
-    _SaveFile(resultFilePath, screenshotData);
+    _SaveFile(resultFilePath, data);
+
+    return true;
+}
+        
+bool CDP::PrintToPDF(
+    const std::string& resultFilePath,
+    double margin /*= 0.4F*/,
+    bool landscape /*= false*/
+)
+{
+    auto boolToString = [](bool value) -> std::string {
+        return value ? "true" : "false";
+    };
+
+    // PDF로 인쇄
+    // A4 사이즈 (210 x 297 mm)
+    const double PAPER_WIDTH = 8.27F;
+    const double PAPER_HEIGHT = 11.7F;
+    bool result = _SendCommand(_Format(
+        Page_printToPDF, 
+        ++m_ID, 
+        boolToString(landscape).c_str(), 
+        PAPER_WIDTH,
+        PAPER_HEIGHT,
+        margin,
+        margin,
+        margin,
+        margin,
+        m_SessionID.c_str()
+    ));
+    if (!result) {
+        return false;
+    }
+
+    nlohmann::json message = _WaitCommand(m_ID);
+    if (message.empty() || message.contains("error")) {
+        return false;
+    }
+    std::string data = message["result"]["data"].get<std::string>();
+
+    // 파일로 저장
+    _SaveFile(resultFilePath, data);
 
     return true;
 }
@@ -522,5 +638,10 @@ bool ConvertHtmlModule::HtmlToPdf(
     const wchar_t* margin,
     int isLandScape
 ) {
-    return false;
+    CDP cdp;
+    cdp.Launch();
+    cdp.Navegate("https://www.naver.com", std::make_pair(-1, -1));
+    cdp.PrintToPDF("screenshot.pdf", 0.4F, false);
+
+    return true;
 }
