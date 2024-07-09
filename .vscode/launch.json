@@ -27,7 +27,16 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
+        {
+            "name": "ConvertHtmlModule(Python) 시작",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/ConvertHtmlModule/ConvertHtmlModule.py",
+            "args": [],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
 
     ]
 }

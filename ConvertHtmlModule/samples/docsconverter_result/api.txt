@@ -1,0 +1,52 @@
+// pdf
+filter request -> b'http://127.0.0.1:7005/common/html2pdf?file_path=__template%2Fdefault%2Fsample_ko-KR.html&ignore_cache=true'
+2024-07-09 20:56:48,442 [DEBUG] (docsconverter.py:775) 
+b'{
+    "sourceFile": "/home/jenkins/documentviewer/documents/__template/default/sample_ko-KR.html", 
+    "targetPath": "/home/jenkins/documentviewer/resource/converting/a2/84/5e9eab0fcfecf7e8acb962198696/"
+}'
+
+// png
+filter request -> b'http://127.0.0.1:7005/common/html2png?file_path=__template%2Fdefault%2Fsample_ko-KR.html&ignore_cache=true'
+2024-07-09 20:58:04,763 [DEBUG] (docsconverter.py:775) 
+b'{
+    "sourceFile": "/home/jenkins/documentviewer/documents/__template/default/sample_ko-KR.html", 
+    "targetPath": "/home/jenkins/documentviewer/resource/converting/7f/8f/87f3bd8506d8634fee95d7e42e99/", 
+    "outputFormat": "png"
+}'
+
+// CommonDocsConverterServer.cpp
+parsed_result.clipX = root.GetValue("clip.x", -1);
+parsed_result.clipY = root.GetValue("clip.y", -1);
+parsed_result.clipWidth = root.GetValue("clip.width", -1);
+parsed_result.clipHeight = root.GetValue("clip.height", -1);
+parsed_result.viewportWidth = root.GetValue("viewportSize.width", -1);
+parsed_result.viewportHeight = root.GetValue("viewportSize.height", -1);
+parsed_result.margin = _UTF82U(root.GetValue("margin", "").c_str());
+parsed_result.orientation = _UTF82U(root.GetValue("orientation", "").c_str());
+parsed_result.encoding = _UTF82U(root.GetValue("encoding", "").c_str());
+
+bool isLandScape = false;
+if (parsed_result.orientation.find(L"portrait") != std::string::npos) {
+	isLandScape = false;
+} else if (parsed_result.orientation.find(L"landscape") != std::string::npos) {
+	isLandScape = true;
+}
+
+// png
+m_pythonInfo.pImageArgs = Py_BuildValue("(s, s, s, i, i, i, i, i, i)", _U2UTF8(sourcePath.c_str()), _U2UTF8(resultFilePath.GetBuffer(resultFilePath.GetLength())), 
+		outputFormat.c_str(), parsed_result.clipX, parsed_result.clipY, parsed_result.clipWidth, parsed_result.clipHeight, parsed_result.viewportWidth,
+		parsed_result.viewportHeight); 
+
+// pdf
+m_pythonInfo.pPdfArgs = Py_BuildValue("(s, s, s, i)", _U2UTF8(sourcePath.c_str()),
+		_U2UTF8(resultFilePath.GetBuffer(resultFilePath.GetLength())), _U2UTF8(parsed_result.margin.c_str()), isLandScape == true ? 1 : 0);
+
+
+[_recv_response_message()] : {
+    "method": "Page.frameStoppedLoading",
+    "params": {
+        "frameId": "A7B8E6F9C73DECF8088802C49E0DFD6F"
+    },
+    "sessionId": "6DE2514CF7268646DC45EE8BD20FD603"
+}

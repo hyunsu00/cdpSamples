@@ -6,6 +6,7 @@
 #include <iostream> // std::cerr
 #include <string> // std::string
 #include <vector> // std::vector
+#include <fstream> // std::ofstream
 #include "nlohmann/json.hpp" // nlohmann::json
 
 class CDP 
@@ -15,14 +16,24 @@ public:
     ~CDP();
 
 public:
-    bool launch();
-    bool navegate(const std::string& url);
+    bool Launch();
+    bool Navegate(
+        const std::string& url, 
+        const std::pair<int, int>& viewportSize
+    );
+    bool Screenshot(
+        const std::string& resultFilePath,
+        const std::string& imageType,
+        const std::pair<int, int>& clipPos,
+        const std::pair<int, int>& clipSize
+    );
 
 private:
-    bool _sendCommand(const std::string& command);
-    bool _recvCommand(std::string& command);
-    nlohmann::json _waitCommand(int id);
-    nlohmann::json _waitCommand(const std::string& method = "Page.loadEventFired");
+    bool _SendCommand(const std::string& command);
+    bool _RecvCommand(std::string& command);
+    nlohmann::json _WaitCommand(int id);
+    nlohmann::json _WaitCommand(const std::string& method = "Page.loadEventFired");
+    void _SaveFile(const std::string& resultFilePath, const std::string& base64Str);
 
 private:
     template<typename... Args>
@@ -39,9 +50,12 @@ private:
     const std::string Page_enable;
     const std::string Emulation_setDeviceMetricsOverride;
     const std::string Page_navigate;
+    const std::string Page_getLayoutMetrics;
+    const std::string Page_captureScreenshot;
 
 private:
     int m_ID;
+    std::string m_TargetID;
     std::string m_SessionID;
 
 private:
@@ -106,7 +120,33 @@ CDP::CDP()
         "sessionId": "%s"
     }
 )")
+, Page_getLayoutMetrics(R"(
+    { 
+        "id": %d, 
+        "method": "Page.getLayoutMetrics", 
+        "sessionId": "%s"
+    }
+)")
+, Page_captureScreenshot(R"(
+    { 
+        "id": %d, 
+        "method": "Page.captureScreenshot",
+        "params": {
+            "format": "%s",
+            "clip": {
+                "x": %d,
+                "y": %d,
+                "width": %d,
+                "height": %d,
+                "scale": 1
+            },
+            "captureBeyondViewport": true
+        },
+        "sessionId": "%s"
+    }
+)")
 , m_ID(0)
+, m_TargetID()
 , m_SessionID()
 , m_PID(0)
 {
@@ -116,7 +156,7 @@ CDP::~CDP()
 {
 }
 
-bool CDP::_sendCommand(const std::string& command)
+bool CDP::_SendCommand(const std::string& command)
 {
     std::vector<char> writeBuf;
     writeBuf.assign(command.begin(), command.end());
@@ -124,7 +164,7 @@ bool CDP::_sendCommand(const std::string& command)
 
 #if defined(DEBUG) || defined(_DEBUG)
     nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
-    std::cout << "[CDP::_sendCommand()] : " << message.dump(4) << std::endl;
+    std::cout << "[CDP::_SendCommand()] : " << message.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -147,7 +187,7 @@ bool CDP::_sendCommand(const std::string& command)
     return true;
 }
 
-bool CDP::_recvCommand(std::string& command)
+bool CDP::_RecvCommand(std::string& command)
 {
     std::vector<char> byteBuf;
     const size_t BUF_LEN = 4096;
@@ -178,11 +218,11 @@ bool CDP::_recvCommand(std::string& command)
     return true;
 }
 
-nlohmann::json CDP::_waitCommand(int id)
+nlohmann::json CDP::_WaitCommand(int id)
 {
     std::string command;
     while (true) {
-        if (!_recvCommand(command)) {
+        if (!_RecvCommand(command)) {
             break;
         }
 
@@ -199,11 +239,11 @@ nlohmann::json CDP::_waitCommand(int id)
     return nlohmann::json();
 }
 
-nlohmann::json CDP::_waitCommand(const std::string& method /*= "Page.loadEventFired"*/)
+nlohmann::json CDP::_WaitCommand(const std::string& method /*= "Page.loadEventFired"*/)
 {
     std::string command;
     while (true) {
-        if (!_recvCommand(command)) {
+        if (!_RecvCommand(command)) {
             break;
         }
 
@@ -220,7 +260,7 @@ nlohmann::json CDP::_waitCommand(const std::string& method /*= "Page.loadEventFi
     return nlohmann::json();
 }
 
-bool CDP::launch()
+bool CDP::Launch()
 {
     int fd3[2] = {0, };  // 첫 번째 파이프: fd 3 (읽기)
     int fd4[2] = {0, };  // 두 번째 파이프: fd 4 (쓰기)
@@ -291,26 +331,26 @@ bool CDP::launch()
     return true;
 }
 
-bool CDP::navegate(const std::string& url)
+bool CDP::Navegate(const std::string& url, const std::pair<int, int>& viewportSize)
 {
     // 탭 생성
-    bool result = _sendCommand(_Format(Target_createTarget, ++m_ID));
+    bool result = _SendCommand(_Format(Target_createTarget, ++m_ID));
     if (!result) {
         return false;
     }
-    nlohmann::json message = _waitCommand(m_ID);
+    nlohmann::json message = _WaitCommand(m_ID);
     if (message.empty() || message.contains("error")) {
         return false;
     }
     std::string targetId = message["result"]["targetId"].get<std::string>();
 
     // 탭 연결
-    result = _sendCommand(_Format(Target_attachToTarget, ++m_ID, targetId.c_str()));
+    result = _SendCommand(_Format(Target_attachToTarget, ++m_ID, targetId.c_str()));
     if (!result) {
         return false;
     }
     std::string command;
-    result = _recvCommand(command);
+    result = _RecvCommand(command);
     if (!result) {
         return false;
     }
@@ -321,28 +361,140 @@ bool CDP::navegate(const std::string& url)
     std::string sessionId = message["params"]["sessionId"].get<std::string>();
 
     // 이벤트 활성화
-    result = _sendCommand(_Format(Page_enable, ++m_ID, sessionId.c_str()));
+    result = _SendCommand(_Format(Page_enable, ++m_ID, sessionId.c_str()));
     if (!result) {
         return false;
     }
 
+    const int DEFAULT_WIDTH = 1280;
+    const int DEFAULT_HEIGHT = 720;
     // 브라우저 크기 설정 (1280 x 720)
-    result = _sendCommand(_Format(Emulation_setDeviceMetricsOverride, ++m_ID, 1280, 720, 1280, 720, sessionId.c_str()));
+    int width = (viewportSize.first == -1) ? DEFAULT_WIDTH : viewportSize.first;
+    int height = (viewportSize.second == -1) ? DEFAULT_HEIGHT : viewportSize.second;
+    int screenWidth = width, screenHeight = height;
+    result = _SendCommand(_Format(Emulation_setDeviceMetricsOverride, ++m_ID, width, height, screenWidth, screenHeight, sessionId.c_str()));
     if (!result) {
         return false;
     }
 
     // 페이지 로드
-    result = _sendCommand(_Format(Page_navigate, ++m_ID, url.c_str(), sessionId.c_str()));
+    result = _SendCommand(_Format(Page_navigate, ++m_ID, url.c_str(), sessionId.c_str()));
     if (!result) {
         return false;
     }
 
-    message = _waitCommand("Page.loadEventFired");
+    message = _WaitCommand("Page.loadEventFired");
     if (message.empty() || message.contains("error")) {
         return false;
     }
+
+    m_TargetID = targetId;
+    m_SessionID = sessionId;
     return true;
+}
+
+bool CDP::Screenshot(
+    const std::string& resultFilePath,
+    const std::string& imageType,
+    const std::pair<int, int>& clipPos,
+    const std::pair<int, int>& clipSize
+)
+{
+    // 레이아웃 메트릭스 가져오기
+    bool result = _SendCommand(_Format(Page_getLayoutMetrics, ++m_ID, m_SessionID.c_str()));
+    if (!result) {
+        return false;
+    }
+    nlohmann::json message = _WaitCommand(m_ID);
+    if (message.empty() || message.contains("error")) {
+        return false;
+    }
+
+    // 스크린샷 캡처
+    std::pair<int, int> contentSize = std::make_pair(
+        message["result"]["contentSize"]["width"].get<int>(),
+        message["result"]["contentSize"]["height"].get<int>()
+    );
+    int clipX = (clipPos.first == -1) ? 0 : clipPos.first;
+    int clipY = (clipPos.second == -1) ? 0 : clipPos.second;
+    int clipWidth = (clipSize.first == -1) ? contentSize.first : clipSize.first;
+    int clipHeight = (clipSize.second == -1) ? contentSize.second : clipSize.second;
+    result = _SendCommand(_Format(Page_captureScreenshot, ++m_ID, imageType.c_str(), clipX, clipY, clipWidth, clipHeight, m_SessionID.c_str()));
+    if (!result) {
+        return false;
+    }
+    message = _WaitCommand(m_ID);
+    if (message.empty() || message.contains("error")) {
+        return false;
+    }
+    std::string screenshotData = message["result"]["data"].get<std::string>();
+
+    // 파일로 저장
+    _SaveFile(resultFilePath, screenshotData);
+
+    return true;
+}
+
+void CDP::_SaveFile(const std::string& resultFilePath, const std::string& base64Str)
+{
+    auto base64Decode = [](const std::string &encoded_string) -> std::vector<unsigned char>
+    {
+        static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                "abcdefghijklmnopqrstuvwxyz"
+                                                "0123456789+/";
+        auto is_base64 = [](unsigned char c) -> bool
+        {
+            return (isalnum(c) || (c == '+') || (c == '/'));
+        };
+
+        size_t in_len = encoded_string.size();
+        size_t i = 0;
+        size_t j = 0;
+        size_t in_ = 0;
+        unsigned char char_array_4[4], char_array_3[3];
+        std::vector<unsigned char> ret;
+
+        while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+            char_array_4[i++] = encoded_string[in_];
+            in_++;
+            if (i == 4) {
+                for (i = 0; i < 4; i++) {
+                    char_array_4[i] = base64_chars.find(char_array_4[i]);
+                }
+                char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+                char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+                char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+                for (i = 0; (i < 3); i++) {
+                    ret.push_back(char_array_3[i]);
+                }
+                i = 0;
+            }
+        }
+
+        if (i) {
+            for (j = i; j < 4; j++) {
+                char_array_4[j] = 0;
+            }
+            for (j = 0; j < 4; j++) {
+                char_array_4[j] = base64_chars.find(char_array_4[j]);
+            }
+            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+            for (j = 0; (j < i - 1); j++) {
+                ret.push_back(char_array_3[j]);
+            }
+        }
+
+        return ret;
+    };
+
+    std::vector<unsigned char> decodedData = base64Decode(base64Str);
+    std::ofstream file(resultFilePath, std::ios::binary);
+    file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
+    file.close();
 }
 
 bool ConvertHtmlModule::HtmlToImage(
@@ -357,10 +509,11 @@ bool ConvertHtmlModule::HtmlToImage(
         int vieweportHeight
 ) {
     CDP cdp;
-    cdp.launch();
-    cdp.navegate("https://www.naver.com");
+    cdp.Launch();
+    cdp.Navegate("https://www.naver.com", std::make_pair(viewportWidth, vieweportHeight));
+    cdp.Screenshot("screenshot.png", "png", std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
 
-    return false;
+    return true;
 }
 
 bool ConvertHtmlModule::HtmlToPdf(

@@ -157,20 +157,21 @@ json _wait_for_page_load(int fd)
 
 int main() {
 
+#if 0
     ConvertHtmlModule::HtmlToImage(
         L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
         L"screenshot.png",
         L"png",
-        0,
-        0,
-        1280,
-        720,
-        1280,
-        720
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
     );
+#endif
 
-
- # if 0   
+ # if 1   
     pid_t pid;
     int fd3[2];  // 첫 번째 파이프: fd 3 (읽기)
     int fd4[2];  // 두 번째 파이프: fd 4 (쓰기)
@@ -298,11 +299,19 @@ int main() {
         result = _send_request_message(fd3[1], message);
 
         // 페이지 로드
+        // message = R"(
+        //     {
+        //         "id": 5,
+        //         "method": "Page.navigate",
+        //         "params": {"url": "file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html"},
+        //         "sessionId": "${sessionId}"
+        //     }
+        // )";
         message = R"(
             {
                 "id": 5,
                 "method": "Page.navigate",
-                "params": {"url": "file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html"},
+                "params": {"url": "https://www.naver.com"},
                 "sessionId": "${sessionId}"
             }
         )";

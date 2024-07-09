@@ -62,3 +62,9 @@ def HtmlToPdf(htmlURL, resultFilePath, margin, isLandScape):
         except Exception as e:
             print('htmlToPdfFailFromPlaywright : %s' % (e))
             return False
+         
+if __name__ == "__main__":
+    # 1. HtmlToImage 테스트
+    HtmlToImage("https://www.naver.com/", "naver.png", "png", -1, -1, -1, -1, -1, -1)
+    # 2. HtmlToPdf 테스트
+    HtmlToPdf("https://www.naver.com/", "naver.pdf", "", 0)
