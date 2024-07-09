@@ -8,9 +8,17 @@
 #include <vector> // std::vector
 #include <fstream> // std::ofstream
 #include "nlohmann/json.hpp" // nlohmann::json
+#include <codecvt> // std::codecvt_utf8
+#include <locale> // std::wstring_convert
 
 class CDP 
 {
+private:
+    static std::string _W2UTF8(const std::wstring& wstr) {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(wstr);
+    }
+
 public:
     CDP();
     ~CDP();
@@ -19,26 +27,28 @@ public:
     bool Launch();
     void Exit();
     bool Navegate(
-        const std::string& url, 
+        const std::wstring& url, 
         const std::pair<int, int>& viewportSize = std::make_pair(-1, -1)
     );
+    bool CloseTab();
     bool Screenshot(
-        const std::string& resultFilePath,
-        const std::string& imageType = "png",
+        const std::wstring& resultFilePath,
+        const std::wstring& imageType = L"png",
         const std::pair<int, int>& clipPos = std::make_pair(-1, -1),
         const std::pair<int, int>& clipSize = std::make_pair(-1, -1)
     );
     bool PrintToPDF(
-        const std::string& resultFilePath,
+        const std::wstring& resultFilePath,
         double margin = 0.4F,
         bool landscape = false
     );
+
 private:
     bool _SendCommand(const std::string& command);
     bool _RecvCommand(std::string& command);
     nlohmann::json _WaitCommand(int id);
     nlohmann::json _WaitCommand(const std::string& method = "Page.loadEventFired");
-    void _SaveFile(const std::string& resultFilePath, const std::string& base64Str);
+    void _SaveFile(const std::wstring& resultFilePath, const std::string& base64Str);
 
 private:
     template<typename... Args>
@@ -52,6 +62,7 @@ private:
 private:
     const std::string Target_createTarget;
     const std::string Target_attachToTarget;
+    const std::string Target_closeTarget;
     const std::string Page_enable;
     const std::string Emulation_setDeviceMetricsOverride;
     const std::string Page_navigate;
@@ -87,6 +98,15 @@ CDP::CDP()
         "params": { 
             "targetId": "%s", 
             "flatten": true 
+        }
+    }
+)")
+, Target_closeTarget(R"(
+    { 
+        "id": %d, 
+        "method": "Target.closeTarget", 
+        "params": { 
+            "targetId": "%s" 
         }
     }
 )")
@@ -338,8 +358,9 @@ bool CDP::Launch()
         if (fd3[1] != 4) { // 4일경우 이미 닫혔음
             close(fd4[1]);
         }
-        int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", NULL);
-        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--remote-debugging-pipe", "--headless", NULL);
+        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
+        int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
+        // int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
 
         if (ret == -1) {
             perror("Error execlp()");
@@ -386,7 +407,7 @@ void CDP::Exit()
 }
 
 bool CDP::Navegate(
-    const std::string& url, 
+    const std::wstring& url, 
     const std::pair<int, int>& viewportSize /*= std::make_pair(-1, -1)*/
 )
 {
@@ -443,7 +464,7 @@ bool CDP::Navegate(
     }
 
     // 페이지 로드
-    result = _SendCommand(_Format(Page_navigate, ++m_ID, url.c_str(), sessionId.c_str()));
+    result = _SendCommand(_Format(Page_navigate, ++m_ID, _W2UTF8(url).c_str(), sessionId.c_str()));
     if (!result) {
         return false;
     }
@@ -458,9 +479,25 @@ bool CDP::Navegate(
     return true;
 }
 
+bool CDP::CloseTab()
+{
+    // 탭 생성
+    bool result = _SendCommand(_Format(Target_closeTarget, ++m_ID, m_TargetID.c_str()));
+    if (!result) {
+        return false;
+    }
+
+    nlohmann::json message = _WaitCommand(m_ID);
+    if (message.empty() || message.contains("error")) {
+        return false;
+    }
+
+    return true;
+}
+
 bool CDP::Screenshot(
-    const std::string& resultFilePath,
-    const std::string& imageType /*= "png"*/,
+    const std::wstring& resultFilePath,
+    const std::wstring& imageType /*= L"png"*/,
     const std::pair<int, int>& clipPos /*= std::make_pair(-1, -1)*/,
     const std::pair<int, int>& clipSize /*= std::make_pair(-1, -1)*/
 )
@@ -487,7 +524,7 @@ bool CDP::Screenshot(
     result = _SendCommand(_Format(
         Page_captureScreenshot, 
         ++m_ID, 
-        imageType.c_str(), 
+        _W2UTF8(imageType).c_str(), 
         clipX, 
         clipY, 
         clipWidth, 
@@ -510,7 +547,7 @@ bool CDP::Screenshot(
 }
         
 bool CDP::PrintToPDF(
-    const std::string& resultFilePath,
+    const std::wstring& resultFilePath,
     double margin /*= 0.4F*/,
     bool landscape /*= false*/
 )
@@ -551,7 +588,7 @@ bool CDP::PrintToPDF(
     return true;
 }
 
-void CDP::_SaveFile(const std::string& resultFilePath, const std::string& base64Str)
+void CDP::_SaveFile(const std::wstring& resultFilePath, const std::string& base64Str)
 {
     auto base64Decode = [](const std::string &encoded_string) -> std::vector<unsigned char>
     {
@@ -608,7 +645,7 @@ void CDP::_SaveFile(const std::string& resultFilePath, const std::string& base64
     };
 
     std::vector<unsigned char> decodedData = base64Decode(base64Str);
-    std::ofstream file(resultFilePath, std::ios::binary);
+    std::ofstream file(_W2UTF8(resultFilePath), std::ios::binary);
     file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
     file.close();
 }
@@ -626,8 +663,8 @@ bool ConvertHtmlModule::HtmlToImage(
 ) {
     CDP cdp;
     cdp.Launch();
-    cdp.Navegate("https://www.naver.com", std::make_pair(viewportWidth, vieweportHeight));
-    cdp.Screenshot("screenshot.png", "png", std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
+    cdp.Navegate(htmlURL, std::make_pair(viewportWidth, vieweportHeight));
+    cdp.Screenshot(resultFilePath, imageType, std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
 
     return true;
 }
@@ -640,8 +677,14 @@ bool ConvertHtmlModule::HtmlToPdf(
 ) {
     CDP cdp;
     cdp.Launch();
-    cdp.Navegate("https://www.naver.com", std::make_pair(-1, -1));
-    cdp.PrintToPDF("screenshot.pdf", 0.4F, false);
+    cdp.Navegate(htmlURL, std::make_pair(-1, -1));
+
+    double marginValue = 0.4F;
+    if (margin != nullptr) {
+        marginValue = std::stod(margin);
+    }
+    bool landscape = (isLandScape == 1) ? true : false;
+    cdp.PrintToPDF(resultFilePath, marginValue, landscape);
 
     return true;
 }

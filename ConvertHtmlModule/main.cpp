@@ -159,9 +159,11 @@ json _wait_for_page_load(int fd)
 int main() {
 
 #if 1
+    std::wstring htmlURL = L"file:///home/hyunsu00/github/hyunsu00/cdpSamples/ConvertHtmlModule/samples/韓글.html";
+    std::wstring htmlURL2 = L"https://www.naver.com";
     ConvertHtmlModule::HtmlToImage(
-        L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
-        L"screenshot.png",
+        htmlURL.c_str(),
+        L"HtmlToImage.png",
         L"png",
         -1,
         -1,
@@ -172,9 +174,9 @@ int main() {
     );
 
     ConvertHtmlModule::HtmlToPdf(
-        L"file:///hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample_en-US.html",
-        L"screenshot.pdf",
-        L"",
+        htmlURL.c_str(),
+        L"HtmlToPdf.pdf",
+        L"0.4",
         0
     );
 #else  
