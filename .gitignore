@@ -28,6 +28,7 @@
 
 # Executables
 *.exe
+!ConvertHtmlModule/chrome/chrome-headless-shell-win32/chrome-headless-shell.exe
 *.out
 *.app
 
