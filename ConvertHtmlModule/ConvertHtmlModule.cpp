@@ -1,8 +1,14 @@
 ﻿#include "ConvertHtmlModule.h"
+
+#ifdef OS_WIN
+#include <windows.h>
+#else
 #include <unistd.h> // pipe, fork
+#include <sys/wait.h> // waitpid
+#endif
+
 #include <cstdio> // perror
 #include <cstdlib> // exit
-#include <sys/wait.h> // waitpid
 #include <iostream> // std::cerr
 #include <string> // std::string
 #include <vector> // std::vector
@@ -21,6 +27,182 @@ struct CDPPipe
     virtual bool Write(const std::string& command) = 0;
     virtual bool Read(std::string& command) = 0;
 }; // struct CDPPipe
+
+#ifdef OS_WIN
+class CDPPipe_Windows : public CDPPipe
+{
+public:
+    CDPPipe_Windows();
+    virtual ~CDPPipe_Windows();
+
+public:
+    virtual bool Launch() override;
+    virtual void Exit() override;
+    virtual bool Write(const std::string& command) override;
+    virtual bool Read(std::string& command) override;
+
+private:
+    HANDLE m_hProcess;
+    HANDLE m_hWrite; // 두 번째 파이프: fd 4 (쓰기)
+    HANDLE m_hRead; // 첫 번째 파이프: fd 3 (읽기)
+}; // class CDPPipe_Windows
+
+CDPPipe_Windows::CDPPipe_Windows()
+: m_hProcess(INVALID_HANDLE_VALUE)
+, m_hWrite(INVALID_HANDLE_VALUE)
+, m_hRead(INVALID_HANDLE_VALUE)
+{
+}
+
+CDPPipe_Windows::~CDPPipe_Windows()
+{
+    Exit();
+}
+
+bool CDPPipe_Windows::Launch()
+{
+    HANDLE fd3[2] = { NULL, NULL }; // 첫 번째 파이프: fd 3 (읽기)
+    HANDLE fd4[2] = { NULL, NULL }; // 두 번째 파이프: fd 4 (쓰기)
+
+    // Set up the security attributes struct.
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = NULL;
+
+    // fd3 파이프 생성 (fd 3용, 읽기 / 쓰기)
+    if (!::CreatePipe(&fd3[0], &fd3[1], &sa, 0)) {
+        return false;
+    }
+
+    // fd4 파이프 생성 (fd 4용, 읽기 / 쓰기)
+    if (!::CreatePipe(&fd4[0], &fd4[1], &sa, 0)) {
+       return false;
+    }
+
+    const int FD_COUNT = 5;
+    BYTE flags[FD_COUNT] = { 0x41, 0x41, 0x41, 0x09, 0x09 };  
+    HANDLE fds[FD_COUNT] = { NULL, NULL, NULL, fd3[0], fd4[1] };
+
+    std::vector<BYTE> buffer(sizeof(FD_COUNT) + sizeof(flags) + sizeof(fds), 0);
+    
+    // FD count 설정
+    memcpy(&buffer[0], &FD_COUNT, sizeof(FD_COUNT));
+    // FD flag 설정
+    memcpy(&buffer[sizeof(FD_COUNT)], &flags, sizeof(flags));
+    // FD handle 설정
+    memcpy(&buffer[sizeof(FD_COUNT) + sizeof(flags)], &fds[0], sizeof(fds));
+
+    // Set up the start up info struct.
+    STARTUPINFOW si = {0, };
+    si.cb = sizeof(STARTUPINFOW);
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.hStdOutput = NULL;
+    si.hStdInput = NULL;
+    si.hStdError = NULL;
+    si.wShowWindow = SW_SHOWDEFAULT;
+    si.cbReserved2 = (WORD)buffer.size();
+    si.lpReserved2 = (LPBYTE)&buffer[0];
+
+    // Create the child process.
+    wchar_t wszCommandLine[] = L".\\chrome\\chrome-headless-shell-win32\\chrome-headless-shell.exe --no-sandbox --disable-gpu, --remote-debugging-pipe";
+    PROCESS_INFORMATION pi = {0, };
+    if (!::CreateProcessW(NULL, // No module name (use command line)
+        wszCommandLine,         // Command line
+        &sa,                    // Process handle not inheritable
+        &sa,                    // Thread handle not inheritable
+        TRUE,                   // Set handle inheritance to TRUE
+        NORMAL_PRIORITY_CLASS,  // No creation flags
+        NULL,                   // Use parent's environment block
+        NULL,                   // Use parent's starting directory
+        &si,                    // Pointer to STARTUPINFO structure 
+        &pi)                    // Pointer to PROCESS_INFORMATION structure
+    ) {
+        return false;
+    }
+
+    ::CloseHandle(fd3[0]);
+    ::CloseHandle(fd4[1]);
+
+    m_hProcess = pi.hProcess;
+    m_hWrite = fd3[1];
+    m_hRead = fd4[0];
+    return true;
+}
+
+void CDPPipe_Windows::Exit()
+{
+    if (m_hWrite != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(m_hWrite);
+    }
+    if (m_hRead != INVALID_HANDLE_VALUE) {
+        ::CloseHandle(m_hRead);
+    }
+    if (m_hProcess != INVALID_HANDLE_VALUE) {
+        ::TerminateProcess(m_hProcess, 0);
+    }
+    m_hProcess = m_hWrite = m_hRead = INVALID_HANDLE_VALUE;
+}
+
+bool CDPPipe_Windows::Write(const std::string& command)
+{
+    std::vector<char> writeBuf;
+    writeBuf.assign(command.begin(), command.end());
+    writeBuf.push_back('\0');
+
+#if defined(DEBUG) || defined(_DEBUG)
+    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
+    std::cout << "[CDPPipe_Windows::Write()] : " << message.dump(4) << std::endl;
+#endif // #if defined(DEBUG) || defined(_DEBUG)
+
+    size_t totalWritten = 0;
+    size_t bytesToWrite = writeBuf.size();
+    while (totalWritten < bytesToWrite) {
+        DWORD written = 0;
+        BOOL result = ::WriteFile(m_hWrite, &writeBuf[totalWritten], bytesToWrite - totalWritten, &written, NULL);
+        if (!result) {
+            // 오류 처리: write 호출 실패
+            return false;
+        }
+        totalWritten += written;
+    }
+
+    return true;
+}
+
+bool CDPPipe_Windows::Read(std::string& command)
+{
+    std::vector<char> byteBuf;
+    const size_t BUF_LEN = 4096;
+    std::vector<char> readBuf(BUF_LEN, 0);
+    DWORD readBytes = 0;
+    do {
+        // fd에서 데이터 읽기
+        BOOL result = ::ReadFile(m_hRead, &readBuf[0], static_cast<int>(readBuf.size()), &readBytes, NULL);
+        if (!result) {
+            // 오류 처리: ReadFile 호출 실패
+            return false;
+        }
+        if (readBytes > 0) {
+            byteBuf.insert(byteBuf.end(), readBuf.begin(), readBuf.begin() + readBytes);
+        } else if (readBytes < 0) {
+            // 오류 처리: ReadFile 호출 실패
+            return false;
+        }
+    } while (readBytes > 0 && readBuf[readBytes -  1] != '\0'); // 데이터의 끝이 \0이거나 읽을 데이터가 없을 때까지 반복
+    
+#if defined(DEBUG) || defined(_DEBUG)
+    nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
+    std::cout << "[CDPPipe_Windows::Read()] : " << rmessage.dump(4) << std::endl;
+#endif // #if defined(DEBUG) || defined(_DEBUG)
+    command = &byteBuf[0];
+    return true;
+}
+// --------------------------------------------------------------------------------
+// End of CDPPipe_Windows class
+// --------------------------------------------------------------------------------
+
+#else // #ifdef OS_WIN
 
 class CDPPipe_Linux : public CDPPipe
 {
@@ -147,7 +329,7 @@ bool CDPPipe_Linux::Write(const std::string& command)
 
 #if defined(DEBUG) || defined(_DEBUG)
     nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
-    std::cout << "[CDP::_SendCommand()] : " << message.dump(4) << std::endl;
+    std::cout << "[CDPPipe_Linux::Write()] : " << message.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -195,7 +377,7 @@ bool CDPPipe_Linux::Read(std::string& command)
     
 #if defined(DEBUG) || defined(_DEBUG)
     nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
-    std::cout << "[_recv_response_message()] : " << rmessage.dump(4) << std::endl;
+    std::cout << "[CDPPipe_Linux::Read()] : " << rmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     command = &byteBuf[0];
     return true;
@@ -203,188 +385,7 @@ bool CDPPipe_Linux::Read(std::string& command)
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Linux class
 // --------------------------------------------------------------------------------
-
-class CDPPipe_Windows : public CDPPipe
-{
-public:
-    CDPPipe_Windows();
-    virtual ~CDPPipe_Windows();
-
-public:
-    virtual bool Launch() override;
-    virtual void Exit() override;
-    virtual bool Write(const std::string& command) override;
-    virtual bool Read(std::string& command) override;
-
-private:
-    pid_t m_PID;
-    int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
-    int m_ReadFD; // 첫 번째 파이프: fd 3 (읽기)
-}; // class CDPPipe_Windows
-
-CDPPipe_Windows::CDPPipe_Windows()
-: m_PID(-1)
-, m_WriteFD(-1)
-, m_ReadFD(-1)
-{
-}
-
-CDPPipe_Windows::~CDPPipe_Windows()
-{
-    Exit();
-}
-
-bool CDPPipe_Windows::Launch()
-{
-    int fd3[2] = {0, };  // 첫 번째 파이프: fd 3 (읽기)
-    int fd4[2] = {0, };  // 두 번째 파이프: fd 4 (쓰기)
-    // fd3 파이프 생성 (fd 3용, 읽기 / 쓰기)
-    if (pipe(fd3) == -1) {
-        return false;
-    }
-    // fd4 파이프 생성 (fd 4용, 읽기 / 쓰기)
-    if (pipe(fd4) == -1) {
-        return false;
-    }
-
-    // 자식 프로세스 생성
-    pid_t pid = fork();
-    if (pid == -1) {
-        return false;
-    } else if (pid == 0) {
-        // 자식 프로세스
-        close(fd3[1]); // fd3 쓰기 닫기 (fd 3 읽기)
-        close(fd4[0]); // fd4 읽기 닫기 (fd 4 쓰기)
-
-        // fd3을 읽기 3 복제
-        int fd = dup2(fd3[0], 3);
-        if (fd == -1) {
-            perror("Error dup2(fd3[0], 3)");
-            exit(1);
-        }
-
-        // fd4 쓰기 4로 복제
-        fd = dup2(fd4[1], 4);
-        if (fd == -1) {
-            perror("Error dup2(fd4[1], 4)");
-            exit(1);
-        }
-
-        // 원본 파이프의 읽기 닫기 및 필요 없는 파일 디스크립터 닫기
-        if (fd3[0] != 3) { // 3일경우 이미 닫혔음
-            close(fd3[0]);
-        }
-        if (fd3[1] != 4) { // 4일경우 이미 닫혔음
-            close(fd4[1]);
-        }
-        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
-        int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
-        // int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
-
-        if (ret == -1) {
-            perror("Error execlp()");
-            exit(1);
-        }
-    } else {
-        // 부모 프로세스
-        close(fd3[0]); // fd3 읽기 닫기
-        close(fd4[1]); // fd4 쓰기 닫기
-
-        int status;
-        if (waitpid(pid, &status, WNOHANG) == 0) {
-            m_PID = pid;
-            m_WriteFD = fd3[1];
-            m_ReadFD = fd4[0];
-            return true; // 성공 반환
-        }
-
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
-            std::cerr << "자식 프로세스에서 오류 발생: " << WEXITSTATUS(status) << std::endl;
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void CDPPipe_Windows::Exit()
-{
-    if (m_WriteFD != -1) {
-        close(m_WriteFD);
-    }
-    if (m_ReadFD != -1) {
-        close(m_ReadFD);
-    }
-    if (m_PID != -1) {
-        kill(m_PID, SIGKILL);
-    }
-    m_PID = m_WriteFD = m_ReadFD = -1;
-}
-
-bool CDPPipe_Windows::Write(const std::string& command)
-{
-    std::vector<char> writeBuf;
-    writeBuf.assign(command.begin(), command.end());
-    writeBuf.push_back('\0');
-
-#if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
-    std::cout << "[CDP::_SendCommand()] : " << message.dump(4) << std::endl;
-#endif // #if defined(DEBUG) || defined(_DEBUG)
-
-    size_t totalWritten = 0;
-    size_t bytesToWrite = writeBuf.size();
-    while (totalWritten < bytesToWrite) {
-        ssize_t result = write(m_WriteFD, &writeBuf[totalWritten], bytesToWrite - totalWritten);
-        if (result < 0) {
-            // 오류 처리: write 호출 실패
-            if (errno == EINTR) {
-                // 시그널에 의해 호출이 중단된 경우, 다시 시도
-                continue;
-            } else {
-                // 다른 오류
-                return false;
-            }
-        }
-        totalWritten += result;
-    }
-
-    return true;
-}
-
-bool CDPPipe_Windows::Read(std::string& command)
-{
-    std::vector<char> byteBuf;
-    const size_t BUF_LEN = 4096;
-    std::vector<char> readBuf(BUF_LEN, 0);
-    ssize_t readBytes = 0;
-    do {
-        // fd에서 데이터 읽기
-        readBytes = read(m_ReadFD, &readBuf[0], static_cast<int>(readBuf.size()));
-        if (readBytes > 0) {
-            byteBuf.insert(byteBuf.end(), readBuf.begin(), readBuf.begin() + readBytes);
-        } else if (readBytes < 0) {
-            // 오류 처리: read 호출 실패
-            if (errno == EINTR) {
-                // 시그널에 의해 호출이 중단된 경우, 다시 시도
-                continue;
-            } else {
-                // 다른 오류
-                return false;
-            }
-        } 
-    } while (readBytes > 0 && readBuf[readBytes -  1] != '\0'); // 데이터의 끝이 \0이거나 읽을 데이터가 없을 때까지 반복
-    
-#if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
-    std::cout << "[_recv_response_message()] : " << rmessage.dump(4) << std::endl;
-#endif // #if defined(DEBUG) || defined(_DEBUG)
-    command = &byteBuf[0];
-    return true;
-}
-// --------------------------------------------------------------------------------
-// End of CDPPipe_Windows class
-// --------------------------------------------------------------------------------
+#endif // !#ifdef OS_WIN
 
 class CDPManager
 {
@@ -571,7 +572,11 @@ CDPManager::CDPManager()
 , m_ID(0)
 , m_TargetID()
 , m_SessionID()
+#ifdef OS_WIN
+, m_Pipe(new CDPPipe_Windows())
+#else // #ifdef OS_WIN
 , m_Pipe(new CDPPipe_Linux())
+#endif // !#ifdef OS_WIN
 {
 }
 
@@ -841,7 +846,7 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
             in_++;
             if (i == 4) {
                 for (i = 0; i < 4; i++) {
-                    char_array_4[i] = base64_chars.find(char_array_4[i]);
+                    char_array_4[i] = static_cast<unsigned char>(base64_chars.find(char_array_4[i]));
                 }
                 char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
                 char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -859,7 +864,7 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
                 char_array_4[j] = 0;
             }
             for (j = 0; j < 4; j++) {
-                char_array_4[j] = base64_chars.find(char_array_4[j]);
+                char_array_4[j] = static_cast<unsigned char>(base64_chars.find(char_array_4[j]));
             }
             char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
             char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);

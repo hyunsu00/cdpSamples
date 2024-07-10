@@ -4,6 +4,7 @@
     // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
     "version": "0.2.0",
     "configurations": [
+    
         {
             "name": "ConvertHtmlModule(gdb) 시작",
             "type": "cppdbg",
@@ -56,7 +57,17 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "ConvertHtmlModule(vsdbg) 시작",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/ConvertHtmlModule.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
         }
-
     ]
 }

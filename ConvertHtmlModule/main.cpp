@@ -1,4 +1,9 @@
-﻿#include <stdio.h>
+﻿#include <string>
+#include "ConvertHtmlModule.h"
+
+#if 0
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -7,9 +12,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include "nlohmann/json.hpp"
-#include "ConvertHtmlModule.h"
 #include <iostream>
-#include <string>
 #include <vector>
 #include <chrono>
 #include <thread>
@@ -155,11 +158,16 @@ json _wait_for_page_load(int fd)
         }
     }
 }
+#endif
 
 int main() {
 
 #if 1
+#ifdef OS_WIN
+    std::wstring htmlURL = L"file://D:/dev/github.com/cdpSamples/ConvertHtmlModule/samples/韓글.html";
+#else // #ifdef OS_WIN
     std::wstring htmlURL = L"file:///home/hyunsu00/github/hyunsu00/cdpSamples/ConvertHtmlModule/samples/韓글.html";
+#endif // !#ifdef OS_WIN
     std::wstring htmlURL2 = L"https://www.naver.com";
     ConvertHtmlModule::HtmlToImage(
         htmlURL.c_str(),
