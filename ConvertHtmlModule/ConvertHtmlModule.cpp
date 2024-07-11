@@ -167,8 +167,8 @@ bool CDPPipe_Windows::Write(const std::string& command)
     size_t totalWritten = 0;
     size_t bytesToWrite = writeBuf.size();
 
-    OVERLAPPED overlapped = {0};
-    overlapped.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+    OVERLAPPED overlapped = {0, };
+    overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
 
     DWORD dwTimeout = m_dwTimeout; // 타임아웃 설정
 
@@ -215,7 +215,7 @@ bool CDPPipe_Windows::Read(std::string& command)
     DWORD readBytes = 0;
 
     OVERLAPPED overlapped = {0, };
-    overlapped.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+    overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
 
     DWORD dwTimeout = m_dwTimeout; // 타임아웃 설정
 
@@ -506,6 +506,7 @@ public:
 public:
     bool Launch();
     void Exit();
+    void SetTimeout(int timeoutSec = 5);
     bool Navegate(
         const std::wstring& url, 
         const std::pair<int, int>& viewportSize = std::make_pair(-1, -1)
@@ -744,6 +745,11 @@ void CDPManager::Exit()
     m_ID = 0;
     m_TargetID.clear();
     m_SessionID.clear();
+}
+
+void CDPManager::SetTimeout(int timeoutSec /*= 5*/)
+{
+    m_Pipe->SetTimeout(timeoutSec);
 }
 
 bool CDPManager::Navegate(
@@ -1012,6 +1018,7 @@ bool ConvertHtmlModule::HtmlToImage(
 ) {
     CDPManager cdpManager;
     cdpManager.Launch();
+    cdpManager.SetTimeout(5);
     cdpManager.Navegate(htmlURL, std::make_pair(viewportWidth, vieweportHeight));
     cdpManager.Screenshot(resultFilePath, imageType, std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
 
@@ -1026,6 +1033,7 @@ bool ConvertHtmlModule::HtmlToPdf(
 ) {
     CDPManager cdpManager;
     cdpManager.Launch();
+    cdpManager.SetTimeout(5);
     cdpManager.Navegate(htmlURL, std::make_pair(-1, -1));
 
     double marginValue = 0.4F;
