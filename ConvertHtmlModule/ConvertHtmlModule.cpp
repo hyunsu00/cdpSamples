@@ -169,6 +169,9 @@ bool CDPPipe_Windows::Write(const std::string& command)
 
     OVERLAPPED overlapped = {0, };
     overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+    if (overlapped.hEvent == NULL) {
+        return false; // CreateEventW 실패
+    }
 
     DWORD dwTimeout = m_dwTimeout; // 타임아웃 설정
 
@@ -184,8 +187,13 @@ bool CDPPipe_Windows::Write(const std::string& command)
                     ::CloseHandle(overlapped.hEvent);
                     return false;
                 } else if (waitResult == WAIT_OBJECT_0) {
+                    // 얼마나 쓰였는지 확인
+                    if (!::GetOverlappedResult(m_hWrite, &overlapped, &written, FALSE)) {
+                        // GetOverlappedResult 호출 실패
+                        ::CloseHandle(overlapped.hEvent);
+                        return false;
+                    }
                     // 데이터 쓰기 성공
-                    ::GetOverlappedResult(m_hWrite, &overlapped, &written, FALSE);
                     totalWritten += written;
                 } else {
                     // WaitForSingleObject 호출 실패
@@ -216,6 +224,9 @@ bool CDPPipe_Windows::Read(std::string& command)
 
     OVERLAPPED overlapped = {0, };
     overlapped.hEvent = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+    if (overlapped.hEvent == NULL) {
+        return false; // CreateEventW 실패
+    }
 
     DWORD dwTimeout = m_dwTimeout; // 타임아웃 설정
 
@@ -232,8 +243,13 @@ bool CDPPipe_Windows::Read(std::string& command)
                     ::CloseHandle(overlapped.hEvent);
                     return false;
                 } else if (waitResult == WAIT_OBJECT_0) {
+                    // 얼마나 읽였는지 확인
+                    if (!::GetOverlappedResult(m_hRead, &overlapped, &readBytes, FALSE)) {
+                        // GetOverlappedResult 호출 실패
+                        ::CloseHandle(overlapped.hEvent);
+                        return false;
+                    }
                     // 데이터 읽기 성공
-                    ::GetOverlappedResult(m_hRead, &overlapped, &readBytes, FALSE);
                 } else {
                     // WaitForSingleObject 호출 실패
                     ::CloseHandle(overlapped.hEvent);
