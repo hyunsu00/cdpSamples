@@ -170,7 +170,7 @@ int main() {
 #endif // !#ifdef OS_WIN
     std::wstring htmlURL2 = L"https://www.naver.com";
     ConvertHtmlModule::HtmlToImage(
-        htmlURL.c_str(),
+        htmlURL2.c_str(),
         L"HtmlToImage.png",
         L"png",
         -1,
@@ -182,7 +182,7 @@ int main() {
     );
 
     ConvertHtmlModule::HtmlToPdf(
-        htmlURL.c_str(),
+        htmlURL2.c_str(),
         L"HtmlToPdf.pdf",
         L"0.4",
         0
