@@ -1,7 +1,7 @@
 ﻿#include "ConvertHtmlModule.h"
 
 #ifdef OS_WIN
-#include <windows.h>
+#include <windows.h> // CreateProcessW, WaitForSingleObject, CloseHandle, ...
 #else
 #include <unistd.h> // pipe, fork
 #include <sys/wait.h> // waitpid
@@ -37,6 +37,16 @@ public:
     virtual ~CDPPipe_Windows();
 
 public:
+    // 비동기(중첩된) I/O를 가능한 파이프 생성
+    // WIN32 익명 파이프는 비동기(중첩된) I/O를 지원하지 않음 
+    static BOOL CreatePipe(
+        PHANDLE hReadPipe, 
+        PHANDLE hWritePipe, 
+        LPSECURITY_ATTRIBUTES lpPipeAttributes, 
+        DWORD nSize
+    );
+
+public:
     virtual bool Launch() override;
     virtual void Exit() override;
     virtual void SetTimeout(int timeoutSec) override;
@@ -63,6 +73,65 @@ CDPPipe_Windows::~CDPPipe_Windows()
     Exit();
 }
 
+BOOL CDPPipe_Windows::CreatePipe(
+    PHANDLE lpReadPipe, 
+    PHANDLE lpWritePipe, 
+    LPSECURITY_ATTRIBUTES lpPipeAttributes, 
+    DWORD nSize
+)
+{
+    if (nSize == 0) {
+        nSize = 4096;
+    }
+
+    static LONG lPipeSerialNumber = 0;
+    WCHAR wszPipeName[64];
+    swprintf_s(
+        wszPipeName, 
+        _countof(wszPipeName), 
+        L"\\\\.\\Pipe\\RemoteExeAnon.%08x.%08x", 
+        ::GetCurrentProcessId(), InterlockedIncrement(&lPipeSerialNumber)
+    );
+
+    HANDLE hReadPipe = ::CreateNamedPipeW(
+        wszPipeName,
+        PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED, // 파이프를 읽기 전용, 비동기(중첩된) I/O를 가능
+        PIPE_TYPE_BYTE | PIPE_WAIT, // 바이트 스트림 모드로 설정, 읽기 작업이 완료될 때까지 대기
+        1, // 파이프의 최대 인스턴스 
+        nSize, // 파이프의 출력 버퍼 크기를 바이트 단위
+        nSize, // 파이프의 입력 버퍼 크기를 바이트 단위
+        INFINITE, // 파이프의 기본 타임아웃 시간 (무한대기)
+        lpPipeAttributes // 보안 특성
+    );
+
+    if (INVALID_HANDLE_VALUE == hReadPipe) {
+        DWORD dwError = ::GetLastError();
+        ::SetLastError(dwError);
+        return FALSE;
+    }
+
+    HANDLE hWritePipe = ::CreateFileW(
+        wszPipeName,
+        GENERIC_WRITE, // 쓰기 접근 권한을 지정
+        0, // 공유를 허용하지 않음 (다른 프로세스가 이 파이프에 접근할 수 없음)
+        lpPipeAttributes, // 보안 특성
+        OPEN_EXISTING, // 이미 존재하는 파이프를 열기
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, // 일반 속성을 지정, 비동기(중첩된) I/O를 가능
+        NULL // 템플릿 파일 핸들 사용 안함
+    );
+
+    if (INVALID_HANDLE_VALUE == hWritePipe) {
+        DWORD dwError = ::GetLastError();
+        ::CloseHandle(hReadPipe);
+        ::SetLastError(dwError);
+        return FALSE;
+    }
+
+    *lpReadPipe = hReadPipe;
+    *lpWritePipe = hWritePipe;
+    return TRUE;
+}
+
 bool CDPPipe_Windows::Launch()
 {
     HANDLE fd3[2] = { NULL, NULL }; // 첫 번째 파이프: fd 3 (읽기)
@@ -75,12 +144,12 @@ bool CDPPipe_Windows::Launch()
     sa.lpSecurityDescriptor = NULL;
 
     // fd3 파이프 생성 (fd 3용, 읽기 / 쓰기)
-    if (!::CreatePipe(&fd3[0], &fd3[1], &sa, 0)) {
+    if (!CDPPipe_Windows::CreatePipe(&fd3[0], &fd3[1], &sa, 0)) {
         return false;
     }
 
     // fd4 파이프 생성 (fd 4용, 읽기 / 쓰기)
-    if (!::CreatePipe(&fd4[0], &fd4[1], &sa, 0)) {
+    if (!CDPPipe_Windows::CreatePipe(&fd4[0], &fd4[1], &sa, 0)) {
        return false;
     }
 
