@@ -430,7 +430,7 @@ bool CDPPipe_Linux::Launch()
         // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
         // int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
-
+        // int ret = execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         if (ret == -1) {
             perror("Error execlp()");
             exit(1);
