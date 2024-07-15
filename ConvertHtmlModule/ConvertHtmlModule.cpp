@@ -1,17 +1,23 @@
 ﻿#include "ConvertHtmlModule.h"
 
-#ifdef OS_WIN
-#include <windows.h> // CreateProcessW, WaitForSingleObject, CloseHandle, ...
+#ifdef _WIN32
+#   include <windows.h> // CreateProcessW, WaitForSingleObject, CloseHandle, ...
+#	include <crtdbg.h> // _ASSERTE
 #else
-#include <unistd.h> // pipe, fork
-#include <sys/wait.h> // waitpid
+#   include <unistd.h> // pipe, fork
+#   include <sys/wait.h> // waitpid
+#	include <assert.h> // assert
+#	define _ASSERTE assert
+#   define INFINITE 0xFFFFFFFF  // Infinite timeout
 #endif
-
+#include <cstdint> // uint32_t
+#include <cmath> // std::round
 #include <cstdio> // perror
 #include <cstdlib> // exit
 #include <iostream> // std::cerr
 #include <string> // std::string
 #include <vector> // std::vector
+#include <algorithm> // std::find
 #include <fstream> // std::ofstream
 #include "nlohmann/json.hpp" // nlohmann::json
 #include <codecvt> // std::codecvt_utf8
@@ -24,12 +30,12 @@ struct CDPPipe
 
     virtual bool Launch() = 0;
     virtual void Exit() = 0;
-    virtual void SetTimeout(int timeoutSec) = 0;
+    virtual void SetTimeout(uint32_t milliseconds) = 0;
     virtual bool Write(const std::string& command) = 0;
     virtual bool Read(std::string& command) = 0;
 }; // struct CDPPipe
 
-#ifdef OS_WIN
+#ifdef _WIN32
 class CDPPipe_Windows : public CDPPipe
 {
 public:
@@ -49,7 +55,7 @@ public:
 public:
     virtual bool Launch() override;
     virtual void Exit() override;
-    virtual void SetTimeout(int timeoutSec) override;
+    virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
     virtual bool Read(std::string& command) override;
 
@@ -217,9 +223,9 @@ void CDPPipe_Windows::Exit()
     m_hProcess = m_hWrite = m_hRead = INVALID_HANDLE_VALUE;
 }
 
-void CDPPipe_Windows::SetTimeout(int timeoutSec)
+void CDPPipe_Windows::SetTimeout(uint32_t milliseconds)
 {
-    m_dwTimeout = static_cast<DWORD>(timeoutSec * 1000);
+    m_dwTimeout = milliseconds;
 }
 
 bool CDPPipe_Windows::Write(const std::string& command)
@@ -337,19 +343,24 @@ bool CDPPipe_Windows::Read(std::string& command)
     
     ::CloseHandle(overlapped.hEvent);
 
+    _ASSERTE(byteBuf.size() > 0 && "No data read from the pipe");
+    if (byteBuf.size() == 0) {
+        return false;
+    }
+
 #if defined(DEBUG) || defined(_DEBUG)
     nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
     std::cout << "[CDPPipe_Windows::Read()] : " << rmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
-    command = &byteBuf[0];
 
+    command = &byteBuf[0];
     return true;
 }
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Windows class
 // --------------------------------------------------------------------------------
 
-#else // #ifdef OS_WIN
+#else // #ifdef _WIN32
 
 class CDPPipe_Linux : public CDPPipe
 {
@@ -360,10 +371,10 @@ public:
 public:
     virtual bool Launch() override;
     virtual void Exit() override;
-    virtual void SetTimeout(int timeoutSec) override;
+    virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
     virtual bool Read(std::string& command) override;
-
+    
 private:
     pid_t m_PID;
     int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
@@ -428,7 +439,7 @@ bool CDPPipe_Linux::Launch()
             close(fd4[1]);
         }
         // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
-        //int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
+        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
         int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         // int ret = execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         if (ret == -1) {
@@ -471,11 +482,15 @@ void CDPPipe_Linux::Exit()
     m_PID = m_WriteFD = m_ReadFD = -1;
 }
 
-void CDPPipe_Linux::SetTimeout(int timeoutSec) /*override*/
+void CDPPipe_Linux::SetTimeout(uint32_t milliseconds) /*override*/
 {
-    m_Timeout.reset(new timeval());
-    m_Timeout->tv_sec = timeoutSec;
-    m_Timeout->tv_usec = 0;
+    if (INFINITE == milliseconds) {
+        m_Timeout.reset(nullptr);
+    } else {
+        m_Timeout.reset(new timeval());
+        m_Timeout->tv_sec = std::round(static_cast<double>(milliseconds) / 1000);
+        m_Timeout->tv_usec = 0;
+    }
 }
 
 bool CDPPipe_Linux::Write(const std::string& command)
@@ -564,17 +579,23 @@ bool CDPPipe_Linux::Read(std::string& command)
         }
     } while (readBytes > 0 && readBuf[readBytes -  1] != '\0'); // 데이터의 끝이 \0이거나 읽을 데이터가 없을 때까지 반복
     
+    _ASSERTE(byteBuf.size() > 0 && "No data read from the pipe");
+    if (byteBuf.size() == 0) {
+        return false;
+    }
+
 #if defined(DEBUG) || defined(_DEBUG)
     nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
     std::cout << "[CDPPipe_Linux::Read()] : " << rmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
+
     command = &byteBuf[0];
     return true;
 }
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Linux class
 // --------------------------------------------------------------------------------
-#endif // !#ifdef OS_WIN
+#endif // !#ifdef _WIN32
 
 class CDPManager
 {
@@ -591,7 +612,7 @@ public:
 public:
     bool Launch();
     void Exit();
-    void SetTimeout(int timeoutSec = 5);
+    void SetTimeout(uint32_t milliseconds = 5000);
     bool Navegate(
         const std::wstring& url, 
         const std::pair<int, int>& viewportSize = std::make_pair(-1, -1)
@@ -612,6 +633,9 @@ public:
 private:
     nlohmann::json _Wait(int id);
     nlohmann::json _Wait(const std::string& method = "Page.loadEventFired");
+    bool _Waits(
+        const std::vector<std::string>& methods = {"Page.loadEventFired", "Network.loadingFinished"}
+    );
     void _SaveFile(const std::wstring& resultFilePath, const std::string& base64Str);
 
 private:
@@ -629,6 +653,7 @@ private:
     const std::string Target_attachToTarget;
     const std::string Target_closeTarget;
     const std::string Page_enable;
+    const std::string Network_enable;
     const std::string Emulation_setDeviceMetricsOverride;
     const std::string Page_navigate;
     const std::string Page_getLayoutMetrics;
@@ -678,6 +703,13 @@ CDPManager::CDPManager()
     { 
         "id": %d, 
         "method": "Page.enable",
+        "sessionId": "%s"
+    }
+)")
+, Network_enable(R"(
+    { 
+        "id": %d, 
+        "method": "Network.enable",
         "sessionId": "%s"
     }
 )")
@@ -764,11 +796,11 @@ CDPManager::CDPManager()
 , m_ID(0)
 , m_TargetID()
 , m_SessionID()
-#ifdef OS_WIN
+#ifdef _WIN32
 , m_Pipe(new CDPPipe_Windows())
-#else // #ifdef OS_WIN
+#else // #ifdef _WIN32
 , m_Pipe(new CDPPipe_Linux())
-#endif // !#ifdef OS_WIN
+#endif // !#ifdef _WIN32
 {
 }
 
@@ -819,6 +851,33 @@ nlohmann::json CDPManager::_Wait(const std::string& method /*= "Page.loadEventFi
     return nlohmann::json();
 }
 
+bool CDPManager::_Waits(
+    const std::vector<std::string>& methods /*= {"Page.loadEventFired", "Network.loadingFinished"}*/
+)
+{
+    std::vector<std::string> emethods(methods);
+    std::string command;
+    while (!emethods.empty()) {
+        if (!m_Pipe->Read(command)) {
+            break;
+        }
+
+        nlohmann::json message = nlohmann::json::parse(command);
+        if (message.contains("error")) {
+            return false;
+        } else {
+            auto it = std::find(emethods.begin(), emethods.end(), message["method"]);
+            if (it != emethods.end()) {
+                emethods.erase(it);
+            } else {
+                continue;
+            }
+        }
+    }
+
+    return true;
+}
+
 bool CDPManager::Launch()
 {
     return m_Pipe->Launch();
@@ -832,9 +891,9 @@ void CDPManager::Exit()
     m_SessionID.clear();
 }
 
-void CDPManager::SetTimeout(int timeoutSec /*= 5*/)
+void CDPManager::SetTimeout(uint32_t milliseconds /*= 5000*/)
 {
-    m_Pipe->SetTimeout(timeoutSec);
+    m_Pipe->SetTimeout(milliseconds);
 }
 
 bool CDPManager::Navegate(
@@ -869,11 +928,16 @@ bool CDPManager::Navegate(
     }
     std::string sessionId = message["params"]["sessionId"].get<std::string>();
 
-    // 이벤트 활성화
+    // 페이지 이벤트 활성화
     result = m_Pipe->Write(_Format(Page_enable, ++m_ID, sessionId.c_str()));
     if (!result) {
         return false;
     }
+    // 네트워크 이벤트 활성화
+    // result = m_Pipe->Write(_Format(Network_enable, ++m_ID, sessionId.c_str()));
+    // if (!result) {
+    //     return false;
+    // }
 
     const int DEFAULT_WIDTH = 1280;
     const int DEFAULT_HEIGHT = 720;
@@ -902,10 +966,16 @@ bool CDPManager::Navegate(
         return false;
     }
 
+    // "Page.loadEventFired" 이벤트 대기
     message = _Wait("Page.loadEventFired");
     if (message.empty() || message.contains("error")) {
         return false;
     }
+    // "Page.loadEventFired" && "Network.loadingFinished" 이벤트 대기 
+    // result = _Waits({"Page.loadEventFired", "Network.loadingFinished"});
+    // if (!result) {
+    //     return false;
+    // }
 
     m_TargetID = targetId;
     m_SessionID = sessionId;
@@ -1103,7 +1173,7 @@ bool ConvertHtmlModule::HtmlToImage(
 ) {
     CDPManager cdpManager;
     cdpManager.Launch();
-    cdpManager.SetTimeout(5);
+    cdpManager.SetTimeout(5000);
     cdpManager.Navegate(htmlURL, std::make_pair(viewportWidth, vieweportHeight));
     cdpManager.Screenshot(resultFilePath, imageType, std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
 
@@ -1118,7 +1188,7 @@ bool ConvertHtmlModule::HtmlToPdf(
 ) {
     CDPManager cdpManager;
     cdpManager.Launch();
-    cdpManager.SetTimeout(5);
+    cdpManager.SetTimeout(5000);
     cdpManager.Navegate(htmlURL, std::make_pair(-1, -1));
 
     double marginValue = 0.4F;

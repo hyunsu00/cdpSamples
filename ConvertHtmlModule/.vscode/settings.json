@@ -63,5 +63,6 @@
         "stop_token": "cpp",
         "cinttypes": "cpp",
         "xstring": "cpp"
-    }
+    },
+    "terminal.integrated.scrollback": 100000
 }
