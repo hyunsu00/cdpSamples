@@ -28,7 +28,6 @@
 
 # Executables
 *.exe
-!ConvertHtmlModule/chrome/chrome-headless-shell-win32/chrome-headless-shell.exe
 *.out
 *.app
 
@@ -37,3 +36,5 @@
 /cdp-port/build/
 /cdp-port/chrome/
 /cdp-port/node/node_modules/
+ConvertHtmlModule/chrome/chrome-headless-shell-linux64/chrome-headless-shell
+ConvertHtmlModule/chrome/chrome-headless-shell-win32/chrome-headless-shell.exe
