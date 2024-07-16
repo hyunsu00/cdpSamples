@@ -1,2 +1,2 @@
-ConvertHtmlModule/chrome/chrome-headless-shell-linux64/chrome-headless-shell filter=lfs diff=lfs merge=lfs -text
-ConvertHtmlModule/chrome/chrome-headless-shell-win32/chrome-headless-shell.exe filter=lfs diff=lfs merge=lfs -text
+# ConvertHtmlModule/chrome/chrome-headless-shell-linux64/chrome-headless-shell filter=lfs diff=lfs merge=lfs -text
+# ConvertHtmlModule/chrome/chrome-headless-shell-win32/chrome-headless-shell.exe filter=lfs diff=lfs merge=lfs -text
