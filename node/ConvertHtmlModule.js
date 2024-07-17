@@ -1,14 +1,13 @@
 // CDPPipe 클래스를 기본 클래스를 만든다.
 const { spawn } = require('child_process');
 const fs = require('fs');
-const wait = require('wait');
 
 class CDPPipe {
 
     m_Chrome = null;
     m_WriteFD = null;
     m_ReadFD = null;
-    
+    m_MessageQueue = [];
     constructor() {
       // 생성자에서 초기화할 변수들을 정의합니다.
     }
@@ -28,8 +27,8 @@ class CDPPipe {
         }
 
         this.m_Chrome = chrome;
-        this.m_WriteFD = chrome.stdio[3];
-        this.m_ReadFD = chrome.stdio[4];
+        this.m_WriteFD = chrome.stdio[3]._handle.fd;
+        this.m_ReadFD = chrome.stdio[4]._handle.fd;
         return true;
     }
   
@@ -42,7 +41,7 @@ class CDPPipe {
     }
 
     Write(command) {
-        const fd = this.m_WriteFD._handle.fd;
+        const fd = this.m_WriteFD;
         const writeBuf = Buffer.from(command + '\0');
         let totalWritten = 0;
         let bytesToWrite = writeBuf.length;
@@ -51,8 +50,8 @@ class CDPPipe {
             try {
                 let written = fs.writeSync(fd, writeBuf, totalWritten, bytesToWrite - totalWritten, null);
                 totalWritten += written;
-            } catch (err) {
-                console.log(err);
+            } catch (e) {
+                console.log('fs.writeSync() Error : ', e);
                 return false;
             }
         }
@@ -62,22 +61,71 @@ class CDPPipe {
     }
 
     Read() {
-        const fd = this.m_ReadFD._handle.fd;
+        if (this.m_MessageQueue.length > 0) {
+            return this.m_MessageQueue.shift();
+        }
+
+        const fd = this.m_ReadFD;
         const BUF_LEN = 4096;
         let readBuf = Buffer.alloc(BUF_LEN);
         let byteBuf = Buffer.alloc(0); // 빈 버퍼 초기화
         let readBytes = 0;
 
-        do {
-            readBytes = fs.readSync(fd, readBuf, 0, BUF_LEN, null);
+        while (true) {
+            try {
+                // 반환값은 읽은 바이트 수이며 반드시 0 이상이어야 한다.
+                // 왜냐하면 0 미만이면 에러가 발생했음을 의미한다.
+                readBytes = fs.readSync(fd, readBuf, 0, BUF_LEN, null);
+            } catch (e) {
+                if (e.code === 'EAGAIN') {
+                    console.log('fs.readSync Error : ', e.code);
+                    // Sleep 100ms
+                    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100)
+                    continue;
+                } else {
+                    return null;
+                }
+            }
+
             if (readBytes > 0) {
                 // 읽은 데이터를 byteBuf에 추가
                 byteBuf = Buffer.concat([byteBuf, readBuf.slice(0, readBytes)]);
             }
-        } while (readBytes > 0 && readBuf[readBytes - 1] != 0); // '\0'의 바이트 값은 0입니다.
+
+            // 읽은 데이터가 없거나, 마지막 문자가 널 문자라면 루프 종료
+            if (readBytes === 0 || readBuf[readBytes - 1] === 0) {
+                break;
+            }
+        }
         
-        const message = byteBuf.toString('utf8', 0, byteBuf.length - 1);
-        return message;
+        if (byteBuf.length === 0) {
+            return null;
+        }
+
+        // toString() 메서드를 이용하여 버퍼를 문자열로 변환
+        // 널 문자를 제외하기 위해 버퍼의 길이에서 1을 뺀다.
+        // 반드시 문자열이 반환되며 버퍼가 비어있을 경우 빈 문자열("")이 반환된다.
+        // 실패하면 에러가 발생한다.
+        let message = null;
+        try {
+            message = byteBuf.toString('utf8', 0, byteBuf.length - 1);
+        } catch (e) {
+            console.log('byteBuf.toString() Error : ', e);
+            return null;
+        }
+        
+        let messages = message.split('\0');
+        for (let i = 0; i < messages.length; i++) {
+            if (messages[i].length === 0) {
+                continue;
+            }
+            this.m_MessageQueue.push(messages[i]);
+
+            // Debugging
+            console.log('[CDPPipe.Read()] : ', JSON.parse(messages[i]));
+        }
+
+        return this.m_MessageQueue.shift();
     }
 }
 
@@ -100,40 +148,26 @@ class CDPManager {
         this.m_Pipe.SetTimeout(milliseconds);
     }
 
-    _IsEmpty(jsonObj) {
-        // jsonObj가 객체인지 확인
-        if (typeof jsonObj !== 'object' || jsonObj === null) {
-            return true;
-        }
-
-        // 객체의 키와 값들을 순회하면서 빈 값 체크
-        for (const key in jsonObj) {
-        if (jsonObj.hasOwnProperty(key)) {
-            const value = jsonObj[key];
-            if (value !== null && value !== undefined && value !== '') {
-                return false; // 하나라도 비어있지 않으면 false 반환
-            }
-        }
-        }
-
-        return true; // 모든 멤버가 비어있다면 true 반환
-    }
-
     _Wait(id) {
         let command = null;
         while (true) {
             command = this.m_Pipe.Read();
-            if (command === '' || command === null) {
+            if (command === null || command.length === 0) {
                 break;
             }
 
-            const message = JSON.parse(command);
-            if (message.error) {
-                return message;
-            } else if (message.id == id) {
-                return message;
-            } else {
-                continue;
+            try {
+                const message = JSON.parse(command);
+                if (message.error) { // error 속성(키)가 존재하면, 존재하지 않으면 undefined
+                    return message;
+                } else if (message.id === id) {
+                    return message;
+                } else {
+                    continue;
+                }
+            } catch (e) {
+                console.log('JSON.parse() Error : ', e);
+                break;
             }
         }
 
@@ -141,7 +175,8 @@ class CDPManager {
     }
 
     Navigate(url) {
-        let ret = this.m_Pipe.Write(
+        // 탭 생성
+        let result = this.m_Pipe.Write(
             JSON.stringify(
                 { 
                     id: ++this.m_ID, 
@@ -152,16 +187,63 @@ class CDPManager {
                 }
             )
         );
-        if (ret === false) {
+        if (!result) {
             return false;
         }
-
-        const message = this._Wait(this.m_ID);
-        if (this._IsEmpty(message) || message.error) {
+        let message = this._Wait(this.m_ID);
+        if (Object.keys(message).length === 0 || message.error) {
             return false;
         }
+        const targetId = message.result.targetId;
 
-        console.log(message);
+        // 탭 연결
+        result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Target.attachToTarget", 
+                    params: { 
+                        targetId: targetId,
+                        flatten: true 
+                    }
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+        message = this._Wait(this.m_ID);
+        if (Object.keys(message).length === 0 || message.error) {
+            return false;
+        }
+        const sessionId = message.result.sessionId;
+
+        // 페이지 이벤트 활성화
+        result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Page.enable", 
+                    sessionId: sessionId
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+        // 네트워크 이벤트 활성화
+        // result = this.m_Pipe.Write(
+        //     JSON.stringify(
+        //         { 
+        //             id: ++this.m_ID, 
+        //             method: "Network.enable", 
+        //             sessionId: sessionId
+        //         }
+        //     )
+        // );
+        // if (!result) {
+        //     return false;
+        // }
 
         return true;
     }
