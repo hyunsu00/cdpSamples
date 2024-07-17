@@ -17,6 +17,7 @@
 #include <iostream> // std::cerr
 #include <string> // std::string
 #include <vector> // std::vector
+#include <queue> // std::queue
 #include <algorithm> // std::find
 #include <fstream> // std::ofstream
 #include "nlohmann/json.hpp" // nlohmann::json
@@ -32,7 +33,7 @@ struct CDPPipe
     virtual void Exit() = 0;
     virtual void SetTimeout(uint32_t milliseconds) = 0;
     virtual bool Write(const std::string& command) = 0;
-    virtual bool Read(std::string& command) = 0;
+    virtual bool Read(std::string& message) = 0;
 }; // struct CDPPipe
 
 #ifdef _WIN32
@@ -57,12 +58,13 @@ public:
     virtual void Exit() override;
     virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
-    virtual bool Read(std::string& command) override;
+    virtual bool Read(std::string& message) override;
 
 private:
     HANDLE m_hProcess;
     HANDLE m_hWrite; // 두 번째 파이프: fd 4 (쓰기)
     HANDLE m_hRead; // 첫 번째 파이프: fd 3 (읽기)
+    std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     DWORD m_dwTimeout; // 타임아웃설정(초), INFINITE이면 타임아웃 없음
 }; // class CDPPipe_Windows
 
@@ -70,6 +72,7 @@ CDPPipe_Windows::CDPPipe_Windows()
 : m_hProcess(INVALID_HANDLE_VALUE)
 , m_hWrite(INVALID_HANDLE_VALUE)
 , m_hRead(INVALID_HANDLE_VALUE)
+, m_MessageQueue()
 , m_dwTimeout(INFINITE)
 {
 }
@@ -290,8 +293,14 @@ bool CDPPipe_Windows::Write(const std::string& command)
     return true;
 }
 
-bool CDPPipe_Windows::Read(std::string& command)
+bool CDPPipe_Windows::Read(std::string& message)
 {
+    if (m_MessageQueue.size() > 0) {
+        message = m_MessageQueue.front();
+        m_MessageQueue.pop();
+        return true;
+    }
+
     std::vector<char> byteBuf;
     const size_t BUF_LEN = 4096;
     std::vector<char> readBuf(BUF_LEN, 0);
@@ -348,13 +357,22 @@ bool CDPPipe_Windows::Read(std::string& command)
         return false;
     }
 
+    auto it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
+    while (it != byteBuf.end()) {
+        std::string str(byteBuf.begin(), it);
+        m_MessageQueue.push(str);
+        byteBuf.erase(byteBuf.begin(), it + 1);
+        it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
-    std::cout << "[CDPPipe_Windows::Read()] : " << rmessage.dump(4) << std::endl;
+    nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
+    std::cout << "[CDPPipe_Windows::Read()] : " << jmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
+    }
 
-    command = &byteBuf[0];
+    message = m_MessageQueue.front();
+    m_MessageQueue.pop();
     return true;
+
 }
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Windows class
@@ -373,12 +391,13 @@ public:
     virtual void Exit() override;
     virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
-    virtual bool Read(std::string& command) override;
+    virtual bool Read(std::string& message) override;
     
 private:
     pid_t m_PID;
     int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
     int m_ReadFD; // 첫 번째 파이프: fd 3 (읽기)
+    std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     std::unique_ptr<timeval> m_Timeout; // 타임아웃설정(초), nullptr이면 타임아웃 없음
 }; // class CDPPipe_Linux
 
@@ -386,6 +405,7 @@ CDPPipe_Linux::CDPPipe_Linux()
 : m_PID(-1)
 , m_WriteFD(-1)
 , m_ReadFD(-1)
+, m_MessageQueue()
 , m_Timeout()
 {
 }
@@ -540,8 +560,14 @@ bool CDPPipe_Linux::Write(const std::string& command)
     return true;
 }
 
-bool CDPPipe_Linux::Read(std::string& command)
+bool CDPPipe_Linux::Read(std::string& message)
 {
+    if (m_MessageQueue.size() > 0) {
+        message = m_MessageQueue.front();
+        m_MessageQueue.pop();
+        return true;
+    }
+
     std::vector<char> byteBuf;
     const size_t BUF_LEN = 4096;
     std::vector<char> readBuf(BUF_LEN, 0);
@@ -584,12 +610,20 @@ bool CDPPipe_Linux::Read(std::string& command)
         return false;
     }
 
+    auto it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
+    while (it != byteBuf.end()) {
+        std::string str(byteBuf.begin(), it);
+        m_MessageQueue.push(str);
+        byteBuf.erase(byteBuf.begin(), it + 1);
+        it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json rmessage = nlohmann::json::parse(static_cast<char*>(&byteBuf[0]));
-    std::cout << "[CDPPipe_Linux::Read()] : " << rmessage.dump(4) << std::endl;
+    nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
+    std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
+    }
 
-    command = &byteBuf[0];
+    message = m_MessageQueue.front();
+    m_MessageQueue.pop();
     return true;
 }
 // --------------------------------------------------------------------------------
@@ -811,17 +845,17 @@ CDPManager::~CDPManager()
 
 nlohmann::json CDPManager::_Wait(int id)
 {
-    std::string command;
+    std::string message;
     while (true) {
-        if (!m_Pipe->Read(command)) {
+        if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json message = nlohmann::json::parse(command);
-        if (message.contains("error")) {
-            return message;
-        } else if (message["id"] == id) {
-            return message;
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
+            return jmessage;
+        } else if (jmessage["id"] == id) {
+            return jmessage;
         } else {
             continue;
         }
@@ -832,17 +866,17 @@ nlohmann::json CDPManager::_Wait(int id)
 
 nlohmann::json CDPManager::_Wait(const std::string& method /*= "Page.loadEventFired"*/)
 {
-    std::string command;
+    std::string message;
     while (true) {
-        if (!m_Pipe->Read(command)) {
+        if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json message = nlohmann::json::parse(command);
-        if (message.contains("error")) {
-            return message;
-        } else if (message["method"] == method) {
-            return message;
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
+            return jmessage;
+        } else if (jmessage["method"] == method) {
+            return jmessage;
         } else {
             continue;
         }
@@ -856,17 +890,17 @@ bool CDPManager::_Waits(
 )
 {
     std::vector<std::string> emethods(methods);
-    std::string command;
+    std::string message;
     while (!emethods.empty()) {
-        if (!m_Pipe->Read(command)) {
+        if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json message = nlohmann::json::parse(command);
-        if (message.contains("error")) {
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
             return false;
         } else {
-            auto it = std::find(emethods.begin(), emethods.end(), message["method"]);
+            auto it = std::find(emethods.begin(), emethods.end(), jmessage["method"]);
             if (it != emethods.end()) {
                 emethods.erase(it);
             } else {
@@ -906,27 +940,22 @@ bool CDPManager::Navegate(
     if (!result) {
         return false;
     }
-    nlohmann::json message = _Wait(m_ID);
-    if (message.empty() || message.contains("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    std::string targetId = message["result"]["targetId"].get<std::string>();
+    std::string targetId = jmessage["result"]["targetId"].get<std::string>();
 
     // 탭 연결
     result = m_Pipe->Write(_Format(Target_attachToTarget, ++m_ID, targetId.c_str()));
     if (!result) {
         return false;
     }
-    std::string command;
-    result = m_Pipe->Read(command);
-    if (!result) {
+    jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    message = nlohmann::json::parse(command);
-    if (message.empty() || message.contains("error")) {
-        return false;
-    }
-    std::string sessionId = message["params"]["sessionId"].get<std::string>();
+    std::string sessionId = jmessage["result"]["sessionId"].get<std::string>();
 
     // 페이지 이벤트 활성화
     result = m_Pipe->Write(_Format(Page_enable, ++m_ID, sessionId.c_str()));
@@ -967,8 +996,8 @@ bool CDPManager::Navegate(
     }
 
     // "Page.loadEventFired" 이벤트 대기
-    message = _Wait("Page.loadEventFired");
-    if (message.empty() || message.contains("error")) {
+    jmessage = _Wait("Page.loadEventFired");
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
     // "Page.loadEventFired" && "Network.loadingFinished" 이벤트 대기 
@@ -990,8 +1019,8 @@ bool CDPManager::CloseTab()
         return false;
     }
 
-    nlohmann::json message = _Wait(m_ID);
-    if (message.empty() || message.contains("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
 
@@ -1010,15 +1039,15 @@ bool CDPManager::Screenshot(
     if (!result) {
         return false;
     }
-    nlohmann::json message = _Wait(m_ID);
-    if (message.empty() || message.contains("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
 
     // 스크린샷 캡처
     std::pair<int, int> contentSize = std::make_pair(
-        message["result"]["contentSize"]["width"].get<int>(),
-        message["result"]["contentSize"]["height"].get<int>()
+        jmessage["result"]["contentSize"]["width"].get<int>(),
+        jmessage["result"]["contentSize"]["height"].get<int>()
     );
     int clipX = (clipPos.first == -1) ? 0 : clipPos.first;
     int clipY = (clipPos.second == -1) ? 0 : clipPos.second;
@@ -1039,11 +1068,11 @@ bool CDPManager::Screenshot(
     if (!result) {
         return false;
     }
-    message = _Wait(m_ID);
-    if (message.empty() || message.contains("error")) {
+    jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    std::string data = message["result"]["data"].get<std::string>();
+    std::string data = jmessage["result"]["data"].get<std::string>();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
@@ -1083,11 +1112,11 @@ bool CDPManager::PrintToPDF(
         return false;
     }
 
-    nlohmann::json message = _Wait(m_ID);
-    if (message.empty() || message.contains("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    std::string data = message["result"]["data"].get<std::string>();
+    std::string data = jmessage["result"]["data"].get<std::string>();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
