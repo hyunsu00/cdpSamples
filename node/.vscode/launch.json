@@ -20,7 +20,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/ConvertHtmlModule.js"
+            "program": "${workspaceFolder}/main.js"
         },
         {
             "name": "playwright_screenshot(node.js) 시작",

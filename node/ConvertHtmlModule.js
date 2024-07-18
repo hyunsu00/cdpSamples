@@ -33,7 +33,20 @@ class CDPPipe {
     }
   
     Exit() {
-        this.m_Chrome.kill(); // Chrome 프로세스 종료
+        // m_WriteFD 닫기
+        if (this.m_WriteFD !== null) {
+            fs.closeSync(this.m_WriteFD);
+            this.m_WriteFD = null;
+        }
+        // m_ReadFD 닫기
+        if (this.m_ReadFD !== null) {
+            fs.closeSync(this.m_ReadFD);
+            this.m_ReadFD = null;
+        }
+        if (this.m_Chrome) {
+            this.m_Chrome.kill(); // Chrome 프로세스 종료
+            this.m_Chrome = null;
+        }
     }
 
     SetTimeout(milliseconds) {
@@ -132,6 +145,8 @@ class CDPPipe {
 class CDPManager {
     m_Pipe = null;
     m_ID = 0;
+    m_TargetID = null;
+    m_SessionID = null;
     constructor() {
         this.m_Pipe = new CDPPipe();
     }
@@ -148,20 +163,34 @@ class CDPManager {
         this.m_Pipe.SetTimeout(milliseconds);
     }
 
-    _Wait(id) {
-        let command = null;
+    _Wait(param) {
+        let result = null;
+        if (typeof param === 'number') {
+            result = this._WaitId(param);
+        } else if (typeof param === 'string') {
+            result = this._WaitMethod(param);
+        } else {
+            console.log('Invalid parameter type');
+            result = null;
+        }
+
+        return result;
+    }
+
+    _WaitId(id) {
+        let message = null;
         while (true) {
-            command = this.m_Pipe.Read();
-            if (command === null || command.length === 0) {
+            message = this.m_Pipe.Read();
+            if (message === null || message.length === 0) {
                 break;
             }
 
             try {
-                const message = JSON.parse(command);
-                if (message.error) { // error 속성(키)가 존재하면, 존재하지 않으면 undefined
-                    return message;
-                } else if (message.id === id) {
-                    return message;
+                const jmessage = JSON.parse(message);
+                if (jmessage.error) { // error 속성(키)가 존재하면, 존재하지 않으면 undefined
+                    return jmessage;
+                } else if (jmessage.id === id) {
+                    return jmessage;
                 } else {
                     continue;
                 }
@@ -174,7 +203,33 @@ class CDPManager {
         return null;
     }
 
-    Navigate(url) {
+    _WaitMethod(method) {
+        let message = null;
+        while (true) {
+            message = this.m_Pipe.Read();
+            if (message === null || message.length === 0) {
+                break;
+            }
+
+            try {
+                const jmessage = JSON.parse(message);
+                if (jmessage.error) { // error 속성(키)가 존재하면, 존재하지 않으면 undefined
+                    return jmessage;
+                } else if (jmessage.method === method) {
+                    return jmessage;
+                } else {
+                    continue;
+                }
+            } catch (e) {
+                console.log('JSON.parse() Error : ', e);
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    Navigate(url, viewWidth = -1, viewHeight = -1) {
         // 탭 생성
         let result = this.m_Pipe.Write(
             JSON.stringify(
@@ -190,11 +245,11 @@ class CDPManager {
         if (!result) {
             return false;
         }
-        let message = this._Wait(this.m_ID);
-        if (Object.keys(message).length === 0 || message.error) {
+        let jmessage = this._Wait(this.m_ID);
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
             return false;
         }
-        const targetId = message.result.targetId;
+        const targetId = jmessage.result.targetId;
 
         // 탭 연결
         result = this.m_Pipe.Write(
@@ -212,11 +267,11 @@ class CDPManager {
         if (!result) {
             return false;
         }
-        message = this._Wait(this.m_ID);
-        if (Object.keys(message).length === 0 || message.error) {
+        jmessage = this._Wait(this.m_ID);
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
             return false;
         }
-        const sessionId = message.result.sessionId;
+        const sessionId = jmessage.result.sessionId;
 
         // 페이지 이벤트 활성화
         result = this.m_Pipe.Write(
@@ -245,10 +300,252 @@ class CDPManager {
         //     return false;
         // }
 
+        const DEFAULT_WIDTH = 1280;
+        const DEFAULT_HEIGHT = 720;
+        // 브라우저 크기 설정 (1280 x 720)
+        const width = (viewWidth === -1) ? DEFAULT_WIDTH : viewWidth;
+        const height = (viewHeight === -1) ? DEFAULT_HEIGHT : viewHeight;
+        const screenWidth = width, screenHeight = height;
+        result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Emulation.setDeviceMetricsOverride", 
+                    params: { 
+                        mobile: false,
+                        width: width, 
+                        height: height, 
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                        deviceScaleFactor: 1, 
+                        screenOrientation: {
+                            angle: 0,
+                            type: "landscapePrimary"
+                        }
+                    },
+                    sessionId: sessionId
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+
+        // 페이지 로드
+        result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Page.navigate", 
+                    params: { 
+                        url: url
+                    },
+                    sessionId: sessionId
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+
+        jmessage = this._Wait('Page.loadEventFired');
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
+            return false;
+        }
+
+        this.m_TargetID = targetId;
+        this.m_SessionID = sessionId;
+        return true;
+    }
+
+    Screenshot(
+        resultFilePath,
+        imageType = 'png',
+        clipX = -1,
+        clipY = -1,
+        clipWidth = -1,
+        clipHeight = -1
+    ) {
+        // 레이아웃 메트릭스 가져오기
+        let result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Page.getLayoutMetrics", 
+                    sessionId: this.m_SessionID
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+        let jmessage = this._Wait(this.m_ID);
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
+            return false;
+        }
+
+        // 스크린샷 캡처
+        const contentWidth = jmessage.result.contentSize.width;
+        const contentHeight = jmessage.result.contentSize.height;
+        clipX = (clipX == -1) ? 0 : clipX;
+        clipY = (clipY == -1) ? 0 : clipY;
+        clipWidth = (clipWidth == -1) ? contentWidth : clipWidth;
+        clipHeight = (clipHeight == -1) ? contentHeight : clipHeight;
+
+        result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id:  ++this.m_ID, 
+                    method: "Page.captureScreenshot",
+                    params: {
+                        format: imageType,
+                        clip: {
+                            x: clipX,
+                            y: clipY,
+                            width: clipWidth,
+                            height: clipHeight,
+                            scale: 1
+                        },
+                        captureBeyondViewport: true
+                    },
+                    sessionId: this.m_SessionID
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+        jmessage = this._Wait(this.m_ID);
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
+            return false;
+        }
+
+        const data = jmessage.result.data;
+        result = this._SaveFile(resultFilePath, data);
+        if (!result) {
+            return false;
+        }
+
+        return true;
+    }
+
+    PrintToPDF(
+        resultFilePath,
+        margin = 0.4,
+        landscape = false
+    ) {
+        // PDF로 인쇄
+        // A4 사이즈 (210 x 297 mm)
+        const PAPER_WIDTH = 8.27;
+        const PAPER_HEIGHT = 11.7;
+        let result = this.m_Pipe.Write(
+            JSON.stringify(
+                { 
+                    id: ++this.m_ID, 
+                    method: "Page.printToPDF",
+                    params: {
+                        landscape: landscape,
+                        displayHeaderFooter: false,
+                        printBackground: false,
+                        scale: 1,
+                        paperWidth: PAPER_WIDTH,
+                        paperHeight: PAPER_HEIGHT,
+                        marginTop: margin,
+                        marginBottom: margin,
+                        marginLeft: margin,
+                        marginRight: margin,
+                        pageRanges: "",
+                        headerTemplate: "",
+                        footerTemplate: "",
+                        preferCSSPageSize: false,
+                        transferMode: "ReturnAsBase64",
+                        generateTaggedPDF: false,
+                        generateDocumentOutline: false
+                    },
+                    sessionId: this.m_SessionID
+                }
+            )
+        );
+        if (!result) {
+            return false;
+        }
+        let jmessage = this._Wait(this.m_ID);
+        if (!jmessage || Object.keys(jmessage).length === 0 || jmessage.error) {
+            return false;
+        }
+
+        const data = jmessage.result.data;
+        result = this._SaveFile(resultFilePath, data);
+        if (!result) {
+            return false;
+        }
+
+        return true;
+    }
+
+    _SaveFile(resultFilePath, base64Str) {
+        try {
+            const decodedData = Buffer.from(base64Str, 'base64');
+            fs.writeFileSync(resultFilePath, decodedData);
+        } catch (e) {
+            console.log('fs.writeFileSync() Error : ', e)
+            return false;
+        }
+
         return true;
     }
 }
 
-let cdpManager = new CDPManager();
-cdpManager.Launch();
-cdpManager.Navigate('https://www.naver.com');
+class ConvertHtmlModule {
+    static HtmltoImage(
+        htmlURL, resultFilePath, imageType, clipX, clipY, clipWidth, clipHeight, viewportWidth, viewportHeight
+    ) {
+        let cdpManager = new CDPManager();
+        try {
+            if (!cdpManager.Launch()) {
+                return false;
+            }
+            cdpManager.SetTimeout(5000);
+            if (!cdpManager.Navigate(htmlURL, viewportWidth, viewportHeight)) {
+                return false;
+            }
+            if (!cdpManager.Screenshot(resultFilePath, imageType, clipX, clipY, clipWidth, clipHeight)) {
+                return false;
+            }
+
+            return true;
+        }  finally {
+            cdpManager.Exit();
+        }
+    }
+
+    static HtmlToPdf(
+        htmlURL, resultFilePath, margin, isLandScape
+    ) {
+        let cdpManager = new CDPManager();
+        try {
+            if (!cdpManager.Launch()) {
+                return false;
+            }
+            cdpManager.SetTimeout(5000);
+            if (!cdpManager.Navigate(htmlURL, -1, -1)) {
+                return false;
+            }
+    
+            let marginValue = 0.4;
+            if (margin) {
+                marginValue = parseFloat(margin);
+            }
+            const landscape = (isLandScape === 1) ? true : false;
+            if (!cdpManager.PrintToPDF(resultFilePath, marginValue, landscape)) {
+                return false;
+            }
+
+            return true;
+        } finally {
+            cdpManager.Exit();
+        }
+    }
+}
+
+module.exports = ConvertHtmlModule;
