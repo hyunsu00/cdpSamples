@@ -8,6 +8,7 @@ class CDPPipe {
     m_WriteFD = null;
     m_ReadFD = null;
     m_MessageQueue = [];
+    m_Timeout = null;
     constructor() {
       // 생성자에서 초기화할 변수들을 정의합니다.
     }
@@ -50,7 +51,7 @@ class CDPPipe {
     }
 
     SetTimeout(milliseconds) {
-        // 메서드 구현
+        this.m_Timeout = milliseconds;
     }
 
     Write(command) {
