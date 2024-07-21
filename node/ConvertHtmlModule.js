@@ -54,44 +54,6 @@ class CDPPipe {
         this.m_Timeout = milliseconds;
     }
 
-    async _WriteTimeout(fd, writeBuf, offset, length, position, timeout) {
-        let timeoutHandle;
-        const writePromise = fs.write(fd, writeBuf, offset, length, position);
-
-        const timeoutPromise = new Promise((_, reject) => {
-            timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeout);
-        });
-
-        return Promise.race([writePromise, timeoutPromise])
-            .then(result => {
-                clearTimeout(timeoutHandle); // 성공 시 타임아웃 취소
-                return result; // 쓰기 작업 결과 반환
-            })
-            .catch(error => {
-                clearTimeout(timeoutHandle); // 에러 발생 시 타임아웃 취소
-                throw error; // 에러 전파
-            });
-    }
-
-    async _ReadTimeout(fd, readBuf, offset, length, position, timeout) {
-        let timeoutHandle;
-        const readPromise = fs.read(fd, readBuf, offset, length, position);
-    
-        const timeoutPromise = new Promise((_, reject) => {
-            timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeout);
-        });
-    
-        return Promise.race([readPromise, timeoutPromise])
-            .then(result => {
-                clearTimeout(timeoutHandle); // 성공 시 타임아웃 취소
-                return result; // 읽기 작업 결과 반환
-            })
-            .catch(error => {
-                clearTimeout(timeoutHandle); // 에러 발생 시 타임아웃 취소
-                throw error; // 에러 전파
-            });
-    }
-
     Write(command) {
         const fd = this.m_WriteFD;
         const timeout = this.m_Timeout;
