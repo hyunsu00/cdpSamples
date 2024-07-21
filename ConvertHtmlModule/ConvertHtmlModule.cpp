@@ -44,6 +44,13 @@ public:
     virtual ~CDPPipe_Windows();
 
 public:
+    // 복사 생성자 / 대입연산자 / 이동생성자/이동대입연산자는 막는다.
+    CDPPipe_Windows(const CDPPipe_Windows&) = delete;
+    CDPPipe_Windows& operator=(const CDPPipe_Windows&) = delete;
+    CDPPipe_Windows(CDPPipe_Windows&&) = delete;
+    CDPPipe_Windows& operator=(CDPPipe_Windows&&) = delete;
+
+public:
     // 비동기(중첩된) I/O를 가능한 파이프 생성
     // WIN32 익명 파이프는 비동기(중첩된) I/O를 지원하지 않음 
     static BOOL CreatePipe(
@@ -387,6 +394,13 @@ public:
     virtual ~CDPPipe_Linux();
 
 public:
+    // 복사 생성자 / 대입연산자 / 이동생성자/이동대입연산자는 막는다.
+    CDPPipe_Linux(const CDPPipe_Linux&) = delete;
+    CDPPipe_Linux& operator=(const CDPPipe_Linux&) = delete;
+    CDPPipe_Linux(CDPPipe_Linux&&) = delete;
+    CDPPipe_Linux& operator=(CDPPipe_Linux&&) = delete;
+
+public:
     virtual bool Launch() override;
     virtual void Exit() override;
     virtual void SetTimeout(uint32_t milliseconds) override;
@@ -441,14 +455,14 @@ bool CDPPipe_Linux::Launch()
         int fd = dup2(fd3[0], 3);
         if (fd == -1) {
             perror("Error dup2(fd3[0], 3)");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         // fd4 쓰기 4로 복제
         fd = dup2(fd4[1], 4);
         if (fd == -1) {
             perror("Error dup2(fd4[1], 4)");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
         // 원본 파이프의 읽기 닫기 및 필요 없는 파일 디스크립터 닫기
@@ -464,7 +478,7 @@ bool CDPPipe_Linux::Launch()
         // int ret = execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         if (ret == -1) {
             perror("Error execlp()");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     } else {
         // 부모 프로세스
@@ -472,15 +486,18 @@ bool CDPPipe_Linux::Launch()
         close(fd4[1]); // fd4 쓰기 닫기
 
         int status;
-        if (waitpid(pid, &status, WNOHANG) == 0) {
+        if (waitpid(pid, &status, WNOHANG) == 0) { // 자식 프로세스가 아직 종료되지 않음
             m_PID = pid;
             m_WriteFD = fd3[1];
             m_ReadFD = fd4[0];
             return true; // 성공 반환
         }
 
+        // 자식프로세스가 정상적으로 종료시 종료 상태코드가 0이 아닌 경우 오류로 간주
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
             std::cerr << "자식 프로세스에서 오류 발생: " << WEXITSTATUS(status) << std::endl;
+            close(fd3[1]); // fd3 쓰기 닫기
+            close(fd4[0]); // fd4 읽기 닫기
             return false;
         }
     }
@@ -617,8 +634,8 @@ bool CDPPipe_Linux::Read(std::string& message)
         byteBuf.erase(byteBuf.begin(), it + 1);
         it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
-    std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.dump(4) << std::endl;
+        nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
+        std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     }
 
@@ -642,6 +659,13 @@ private:
 public:
     CDPManager();
     ~CDPManager();
+
+public:
+    // 복사 생성자 / 대입연산자 / 이동생성자/이동대입연산자는 막는다.
+    CDPManager(const CDPManager&) = delete;
+    CDPManager& operator=(const CDPManager&) = delete;
+    CDPManager(CDPManager&&) = delete;
+    CDPManager& operator=(CDPManager&&) = delete;
 
 public:
     bool Launch();
@@ -1201,10 +1225,16 @@ bool ConvertHtmlModule::HtmlToImage(
         int vieweportHeight
 ) {
     CDPManager cdpManager;
-    cdpManager.Launch();
+    if (!cdpManager.Launch()) {
+        return false;
+    }
     cdpManager.SetTimeout(5000);
-    cdpManager.Navegate(htmlURL, std::make_pair(viewportWidth, vieweportHeight));
-    cdpManager.Screenshot(resultFilePath, imageType, std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight));
+    if (!cdpManager.Navegate(htmlURL, std::make_pair(viewportWidth, vieweportHeight))) {
+        return false;
+    }
+    if (!cdpManager.Screenshot(resultFilePath, imageType, std::make_pair(clipX, clipY), std::make_pair(clipWidth, clipHeight))) {
+        return false;
+    }
 
     return true;
 }
@@ -1216,16 +1246,22 @@ bool ConvertHtmlModule::HtmlToPdf(
     int isLandScape
 ) {
     CDPManager cdpManager;
-    cdpManager.Launch();
+    if (!cdpManager.Launch()) {
+        return false;
+    }
     cdpManager.SetTimeout(5000);
-    cdpManager.Navegate(htmlURL, std::make_pair(-1, -1));
+    if (!cdpManager.Navegate(htmlURL, std::make_pair(-1, -1))) {
+        return false;
+    }
 
     double marginValue = 0.4F;
     if (margin != nullptr) {
         marginValue = std::stod(margin);
     }
     bool landscape = (isLandScape == 1) ? true : false;
-    cdpManager.PrintToPDF(resultFilePath, marginValue, landscape);
+    if (!cdpManager.PrintToPDF(resultFilePath, marginValue, landscape)) {
+        return false;
+    }
 
     return true;
 }
