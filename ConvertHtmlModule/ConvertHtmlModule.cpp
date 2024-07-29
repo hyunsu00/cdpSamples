@@ -25,7 +25,8 @@
 #include <queue> // std::queue
 #include <algorithm> // std::find
 #include <fstream> // std::ofstream
-#include "nlohmann/json.hpp" // nlohmann::json
+#include <json/json.h> // Json::Value
+#include <json/reader.h> // Json::Reader
 #include <codecvt> // std::codecvt_utf8
 #include <locale> // std::wstring_convert
 
@@ -250,8 +251,13 @@ bool CDPPipe_Windows::Write(const hncstd::string& command)
     writeBuf.push_back('\0');
 
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
-    std::cout << "[CDPPipe_Windows::Write()] : " << message.dump(4) << std::endl;
+    Json::Value message;
+    bool result = Json::Reader().parse(hncstd::string(&writeBuf[0]), message);
+    _ASSERTE(result && "Failed to parse JSON message");
+    if (!result) {
+        return false;
+    }
+    std::cout << "[CDPPipe_Windows::Write()] : " << message.toStyledString() << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -376,8 +382,13 @@ bool CDPPipe_Windows::Read(hncstd::string& message)
         byteBuf.erase(byteBuf.begin(), it + 1);
         it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
-    std::cout << "[CDPPipe_Windows::Read()] : " << jmessage.dump(4) << std::endl;
+        Json::Value jmessage;
+        bool result = Json::Reader().parse(str, jmessage);
+        _ASSERTE(result && "Failed to parse JSON jmessage");
+        if (!result) {
+            return false;
+        }
+        std::cout << "[CDPPipe_Windows::Read()] : " << jmessage.toStyledString() << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     }
 
@@ -542,8 +553,13 @@ bool CDPPipe_Linux::Write(const hncstd::string& command)
     writeBuf.push_back('\0');
 
 #if defined(DEBUG) || defined(_DEBUG)
-    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
-    std::cout << "[CDPPipe_Linux::Write()] : " << message.dump(4) << std::endl;
+    Json::Value message;
+    bool result = Json::Reader().parse(hncstd::string(&writeBuf[0]), message);
+    _ASSERTE(result && "Failed to parse JSON message");
+    if (!result) {
+        return false;
+    }
+    std::cout << "[CDPPipe_Linux::Write()] : " << message.toStyledString() << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -639,8 +655,13 @@ bool CDPPipe_Linux::Read(hncstd::string& message)
         byteBuf.erase(byteBuf.begin(), it + 1);
         it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-        nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
-        std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.dump(4) << std::endl;
+        Json::Value jmessage;
+        bool result = Json::Reader().parse(str, jmessage);
+        _ASSERTE(result && "Failed to parse JSON jmessage");
+        if (!result) {
+            return false;
+        }
+        std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.toStyledString() << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     }
 
@@ -694,8 +715,8 @@ public:
     );
 
 private:
-    nlohmann::json _Wait(int id);
-    nlohmann::json _Wait(const hncstd::string& method = "Page.loadEventFired");
+    Json::Value _Wait(int id);
+    Json::Value _Wait(const hncstd::string& method = "Page.loadEventFired");
     bool _Waits(
         const std::vector<hncstd::string>& methods = {"Page.loadEventFired", "Network.loadingFinished"}
     );
@@ -872,16 +893,21 @@ CDPManager::~CDPManager()
     Exit();
 }
 
-nlohmann::json CDPManager::_Wait(int id)
+Json::Value CDPManager::_Wait(int id)
 {
     hncstd::string message;
+    Json::Reader reader;
     while (true) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json jmessage = nlohmann::json::parse(message);
-        if (jmessage.contains("error")) {
+        Json::Value jmessage;
+        if (!reader.parse(message, jmessage)) {
+            break;
+        }
+
+        if (jmessage.isMember("error")) {
             return jmessage;
         } else if (jmessage["id"] == id) {
             return jmessage;
@@ -890,19 +916,24 @@ nlohmann::json CDPManager::_Wait(int id)
         }
     }
 
-    return nlohmann::json();
+    return Json::Value();
 }
 
-nlohmann::json CDPManager::_Wait(const hncstd::string& method /*= "Page.loadEventFired"*/)
+Json::Value CDPManager::_Wait(const hncstd::string& method /*= "Page.loadEventFired"*/)
 {
     hncstd::string message;
+    Json::Reader reader;
     while (true) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json jmessage = nlohmann::json::parse(message);
-        if (jmessage.contains("error")) {
+        Json::Value jmessage;
+        if (!reader.parse(message, jmessage)) {
+            break;
+        }
+
+        if (jmessage.isMember("error")) {
             return jmessage;
         } else if (jmessage["method"] == method) {
             return jmessage;
@@ -911,7 +942,7 @@ nlohmann::json CDPManager::_Wait(const hncstd::string& method /*= "Page.loadEven
         }
     }
 
-    return nlohmann::json();
+    return Json::Value();
 }
 
 bool CDPManager::_Waits(
@@ -920,16 +951,21 @@ bool CDPManager::_Waits(
 {
     std::vector<hncstd::string> emethods(methods);
     hncstd::string message;
+    Json::Reader reader;
     while (!emethods.empty()) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        nlohmann::json jmessage = nlohmann::json::parse(message);
-        if (jmessage.contains("error")) {
+        Json::Value jmessage;
+        if (!reader.parse(message, jmessage)) {
+            return false;
+        }
+
+        if (jmessage.isMember("error")) {
             return false;
         } else {
-            auto it = std::find(emethods.begin(), emethods.end(), jmessage["method"]);
+            auto it = std::find(emethods.begin(), emethods.end(), jmessage["method"].asCString());
             if (it != emethods.end()) {
                 emethods.erase(it);
             } else {
@@ -969,11 +1005,11 @@ bool CDPManager::Navegate(
     if (!result) {
         return false;
     }
-    nlohmann::json jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    Json::Value jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
-    hncstd::string targetId = jmessage["result"]["targetId"].get<hncstd::string>();
+    hncstd::string targetId = jmessage["result"]["targetId"].asCString();
 
     // 탭 연결
     result = m_Pipe->Write(_Format(Target_attachToTarget, ++m_ID, targetId.c_str()));
@@ -981,10 +1017,10 @@ bool CDPManager::Navegate(
         return false;
     }
     jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
-    hncstd::string sessionId = jmessage["result"]["sessionId"].get<hncstd::string>();
+    hncstd::string sessionId = jmessage["result"]["sessionId"].asCString();
 
     // 페이지 이벤트 활성화
     result = m_Pipe->Write(_Format(Page_enable, ++m_ID, sessionId.c_str()));
@@ -1026,7 +1062,7 @@ bool CDPManager::Navegate(
 
     // "Page.loadEventFired" 이벤트 대기
     jmessage = _Wait("Page.loadEventFired");
-    if (jmessage.empty() || jmessage.contains("error")) {
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
     // "Page.loadEventFired" && "Network.loadingFinished" 이벤트 대기 
@@ -1048,8 +1084,8 @@ bool CDPManager::CloseTab()
         return false;
     }
 
-    nlohmann::json jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    Json::Value jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
 
@@ -1068,15 +1104,15 @@ bool CDPManager::Screenshot(
     if (!result) {
         return false;
     }
-    nlohmann::json jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    Json::Value jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
 
     // 스크린샷 캡처
     std::pair<int, int> contentSize = std::make_pair(
-        jmessage["result"]["contentSize"]["width"].get<int>(),
-        jmessage["result"]["contentSize"]["height"].get<int>()
+        jmessage["result"]["contentSize"]["width"].asInt(),
+        jmessage["result"]["contentSize"]["height"].asInt()
     );
     int clipX = (clipPos.first == -1) ? 0 : clipPos.first;
     int clipY = (clipPos.second == -1) ? 0 : clipPos.second;
@@ -1098,10 +1134,10 @@ bool CDPManager::Screenshot(
         return false;
     }
     jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
-    hncstd::string data = jmessage["result"]["data"].get<hncstd::string>();
+    hncstd::string data = jmessage["result"]["data"].asCString();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
@@ -1141,11 +1177,11 @@ bool CDPManager::PrintToPDF(
         return false;
     }
 
-    nlohmann::json jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.contains("error")) {
+    Json::Value jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.isMember("error")) {
         return false;
     }
-    hncstd::string data = jmessage["result"]["data"].get<hncstd::string>();
+    hncstd::string data = jmessage["result"]["data"].asCString();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
