@@ -1,4 +1,5 @@
-﻿#include <string>
+﻿#include "stdafx.h"
+#include <string>
 #include "ConvertHtmlModule.h"
 
 #if 0

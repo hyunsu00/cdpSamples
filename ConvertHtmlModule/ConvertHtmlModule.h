@@ -5,9 +5,9 @@ class ConvertHtmlModule
 {
 public:
     static bool HtmlToImage(
-        const wchar_t* htmlURL, 
-        const wchar_t* resultFilePath, 
-        const wchar_t* imageType, 
+        const hncstd::wstring& htmlURL, 
+        const hncstd::wstring& resultFilePath, 
+        const hncstd::wstring& imageType, 
         int clipX, 
         int clipY, 
         int clipWidth, 
@@ -17,9 +17,9 @@ public:
     );
 
     static bool HtmlToPdf(
-        const wchar_t* htmlURL,
-        const wchar_t* resultFilePath,
-        const wchar_t* margin,
+        const hncstd::wstring& htmlURL,
+        const hncstd::wstring& resultFilePath,
+        const hncstd::wstring& margin,
         int isLandScape
     );
 };
