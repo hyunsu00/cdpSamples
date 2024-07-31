@@ -1,4 +1,4 @@
-﻿﻿#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ConvertHtmlModule.h"
 
 #ifdef _WIN32
@@ -29,6 +29,14 @@
 #include <codecvt> // std::codecvt_utf8
 #include <locale> // std::wstring_convert
 
+struct Converter 
+{
+    static std::string W2UTF8(const std::wstring& wstr) {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(wstr);
+    }
+}; // struct Converter
+
 struct CDPPipe
 {
     CDPPipe() {}
@@ -39,6 +47,8 @@ struct CDPPipe
     virtual void SetTimeout(uint32_t milliseconds) = 0;
     virtual bool Write(const std::string& command) = 0;
     virtual bool Read(std::string& message) = 0;
+    virtual void SetChromePath(const std::wstring& chromePath) = 0;
+    virtual const wchar_t* GetChromePath() const = 0;
 }; // struct CDPPipe
 
 #ifdef _WIN32
@@ -71,6 +81,8 @@ public:
     virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
     virtual bool Read(std::string& message) override;
+    virtual void SetChromePath(const std::wstring& chromePath) override;
+    virtual const wchar_t* GetChromePath() const override;
 
 private:
     HANDLE m_hProcess;
@@ -78,6 +90,7 @@ private:
     HANDLE m_hRead; // 첫 번째 파이프: fd 3 (읽기)
     std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     DWORD m_dwTimeout; // 타임아웃설정(초), INFINITE이면 타임아웃 없음
+    std::wstring m_ChromePath; // 크롬실행파일 경로
 }; // class CDPPipe_Windows
 
 CDPPipe_Windows::CDPPipe_Windows()
@@ -86,6 +99,7 @@ CDPPipe_Windows::CDPPipe_Windows()
 , m_hRead(INVALID_HANDLE_VALUE)
 , m_MessageQueue()
 , m_dwTimeout(INFINITE)
+, m_ChromePath(L".\\chrome\\chrome-headless-shell-win32\\chrome-headless-shell.exe")
 {
 }
 
@@ -199,18 +213,25 @@ bool CDPPipe_Windows::Launch()
     si.lpReserved2 = (LPBYTE)&buffer[0];
 
     // Create the child process.
-    wchar_t wszCommandLine[] = L".\\chrome\\chrome-headless-shell-win32\\chrome-headless-shell.exe --no-sandbox --disable-gpu, --remote-debugging-pipe";
+    // wchar_t wszCommandLine[] = L".\\chrome\\chrome-headless-shell-win32\\chrome-headless-shell.exe --no-sandbox --disable-gpu --remote-debugging-pipe";
+    std::wstring applicationName = GetChromePath();
+    std::wstring args = L"--no-sandbox --disable-gpu --remote-debugging-pipe"; // 실행 인자를 설정
+    std::wstring commandLine = applicationName + L" " + args;
+    wchar_t wszCommandLine[MAX_PATH] = {0, };
+    wcscpy_s(wszCommandLine, commandLine.c_str());
+
     PROCESS_INFORMATION pi = {0, };
-    if (!::CreateProcessW(NULL, // No module name (use command line)
-        wszCommandLine,         // Command line
-        &sa,                    // Process handle not inheritable
-        &sa,                    // Thread handle not inheritable
-        TRUE,                   // Set handle inheritance to TRUE
-        NORMAL_PRIORITY_CLASS,  // No creation flags
-        NULL,                   // Use parent's environment block
-        NULL,                   // Use parent's starting directory
-        &si,                    // Pointer to STARTUPINFO structure 
-        &pi)                    // Pointer to PROCESS_INFORMATION structure
+    if (!::CreateProcessW(
+        applicationName.c_str(), // No module name (use command line)
+        wszCommandLine,          // Command line
+        &sa,                     // Process handle not inheritable
+        &sa,                     // Thread handle not inheritable
+        TRUE,                    // Set handle inheritance to TRUE
+        NORMAL_PRIORITY_CLASS,   // No creation flags
+        NULL,                    // Use parent's environment block
+        NULL,                    // Use parent's starting directory
+        &si,                     // Pointer to STARTUPINFO structure 
+        &pi)                     // Pointer to PROCESS_INFORMATION structure
     ) {
         return false;
     }
@@ -383,8 +404,18 @@ bool CDPPipe_Windows::Read(std::string& message)
 
     message = m_MessageQueue.front();
     m_MessageQueue.pop();
-    return true;
 
+    return true;
+}
+
+void CDPPipe_Windows::SetChromePath(const std::wstring& chromePath)
+{
+    m_ChromePath = chromePath;
+}
+
+const wchar_t* CDPPipe_Windows::GetChromePath() const
+{
+    return m_ChromePath.c_str();
 }
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Windows class
@@ -411,13 +442,16 @@ public:
     virtual void SetTimeout(uint32_t milliseconds) override;
     virtual bool Write(const std::string& command) override;
     virtual bool Read(std::string& message) override;
-    
+    virtual void SetChromePath(const std::wstring& chromePath) override;
+    virtual const wchar_t* GetChromePath() const override;
+
 private:
     pid_t m_PID;
     int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
     int m_ReadFD; // 첫 번째 파이프: fd 3 (읽기)
     std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     std::unique_ptr<timeval> m_Timeout; // 타임아웃설정(초), nullptr이면 타임아웃 없음
+    std::wstring m_ChromePath; // 크롬실행파일 경로
 }; // class CDPPipe_Linux
 
 CDPPipe_Linux::CDPPipe_Linux()
@@ -426,6 +460,7 @@ CDPPipe_Linux::CDPPipe_Linux()
 , m_ReadFD(-1)
 , m_MessageQueue()
 , m_Timeout()
+, m_ChromePath(L"./chrome/chrome-headless-shell-linux64/chrome-headless-shell")
 {
 }
 
@@ -477,10 +512,13 @@ bool CDPPipe_Linux::Launch()
         if (fd3[1] != 4) { // 4일경우 이미 닫혔음
             close(fd4[1]);
         }
+
+        std::string chromePath = Converter::W2UTF8(GetChromePath());
         // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
-        int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
+        // int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         // int ret = execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
+        int ret = execlp(chromePath.c_str(), chromePath.c_str(), "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         if (ret == -1) {
             perror("Error execlp()");
             exit(EXIT_FAILURE);
@@ -646,7 +684,18 @@ bool CDPPipe_Linux::Read(std::string& message)
 
     message = m_MessageQueue.front();
     m_MessageQueue.pop();
+    
     return true;
+}
+
+void CDPPipe_Linux::SetChromePath(const std::wstring& chromePath)
+{
+    m_ChromePath = chromePath;
+}
+
+const wchar_t* CDPPipe_Linux::GetChromePath() const
+{
+    return m_ChromePath.c_str();
 }
 // --------------------------------------------------------------------------------
 // End of CDPPipe_Linux class
@@ -655,12 +704,6 @@ bool CDPPipe_Linux::Read(std::string& message)
 
 class CDPManager
 {
-private:
-    static std::string _W2UTF8(const std::wstring& wstr) {
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        return converter.to_bytes(wstr);
-    }
-
 public:
     CDPManager();
     ~CDPManager();
@@ -1019,7 +1062,7 @@ bool CDPManager::Navegate(
     }
 
     // 페이지 로드
-    result = m_Pipe->Write(_Format(Page_navigate, ++m_ID, _W2UTF8(url).c_str(), sessionId.c_str()));
+    result = m_Pipe->Write(_Format(Page_navigate, ++m_ID, Converter::W2UTF8(url).c_str(), sessionId.c_str()));
     if (!result) {
         return false;
     }
@@ -1086,7 +1129,7 @@ bool CDPManager::Screenshot(
         _Format(
             Page_captureScreenshot, 
             ++m_ID, 
-            _W2UTF8(imageType).c_str(), 
+            Converter::W2UTF8(imageType).c_str(), 
             clipX, 
             clipY, 
             clipWidth, 
@@ -1210,7 +1253,7 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
     };
 
     std::vector<unsigned char> decodedData = base64Decode(base64Str);
-    std::ofstream file(_W2UTF8(resultFilePath), std::ios::binary);
+    std::ofstream file(Converter::W2UTF8(resultFilePath), std::ios::binary);
     file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
     file.close();
 }
@@ -1219,15 +1262,15 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
 // --------------------------------------------------------------------------------
 
 bool ConvertHtmlModule::HtmlToImage(
-        const wchar_t* htmlURL, 
-        const wchar_t* resultFilePath, 
-        const wchar_t* imageType, 
-        int clipX, 
-        int clipY, 
-        int clipWidth, 
-        int clipHeight, 
-        int viewportWidth, 
-        int vieweportHeight
+    const wchar_t* htmlURL,
+    const wchar_t* resultFilePath,
+    const wchar_t* imageType,
+    int clipX,
+    int clipY,
+    int clipWidth,
+    int clipHeight,
+    int viewportWidth,
+    int vieweportHeight
 ) {
     CDPManager cdpManager;
     if (!cdpManager.Launch()) {

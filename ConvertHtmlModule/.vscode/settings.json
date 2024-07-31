@@ -62,7 +62,8 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "cinttypes": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "xlocbuf": "cpp"
     },
     "terminal.integrated.scrollback": 100000
 }

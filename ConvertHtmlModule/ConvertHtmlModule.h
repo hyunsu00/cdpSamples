@@ -1,4 +1,4 @@
-﻿﻿#ifndef __CONVERT_HTML_MODULE_H__
+﻿#ifndef __CONVERT_HTML_MODULE_H__
 #define __CONVERT_HTML_MODULE_H__
 
 class ConvertHtmlModule 
