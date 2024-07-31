@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿﻿#include "stdafx.h"
 #include "ConvertHtmlModule.h"
 
 #ifdef _WIN32
@@ -25,8 +25,7 @@
 #include <queue> // std::queue
 #include <algorithm> // std::find
 #include <fstream> // std::ofstream
-#include <json/json.h> // Json::Value
-#include <json/reader.h> // Json::Reader
+#include "nlohmann/json.hpp" // nlohmann::json
 #include <codecvt> // std::codecvt_utf8
 #include <locale> // std::wstring_convert
 
@@ -38,8 +37,8 @@ struct CDPPipe
     virtual bool Launch() = 0;
     virtual void Exit() = 0;
     virtual void SetTimeout(uint32_t milliseconds) = 0;
-    virtual bool Write(const hncstd::string& command) = 0;
-    virtual bool Read(hncstd::string& message) = 0;
+    virtual bool Write(const std::string& command) = 0;
+    virtual bool Read(std::string& message) = 0;
 }; // struct CDPPipe
 
 #ifdef _WIN32
@@ -70,14 +69,14 @@ public:
     virtual bool Launch() override;
     virtual void Exit() override;
     virtual void SetTimeout(uint32_t milliseconds) override;
-    virtual bool Write(const hncstd::string& command) override;
-    virtual bool Read(hncstd::string& message) override;
+    virtual bool Write(const std::string& command) override;
+    virtual bool Read(std::string& message) override;
 
 private:
     HANDLE m_hProcess;
     HANDLE m_hWrite; // 두 번째 파이프: fd 4 (쓰기)
     HANDLE m_hRead; // 첫 번째 파이프: fd 3 (읽기)
-    std::queue<hncstd::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
+    std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     DWORD m_dwTimeout; // 타임아웃설정(초), INFINITE이면 타임아웃 없음
 }; // class CDPPipe_Windows
 
@@ -244,20 +243,15 @@ void CDPPipe_Windows::SetTimeout(uint32_t milliseconds)
     m_dwTimeout = milliseconds;
 }
 
-bool CDPPipe_Windows::Write(const hncstd::string& command)
+bool CDPPipe_Windows::Write(const std::string& command)
 {
     std::vector<char> writeBuf;
     writeBuf.assign(command.begin(), command.end());
     writeBuf.push_back('\0');
 
 #if defined(DEBUG) || defined(_DEBUG)
-    Json::Value message;
-    bool result = Json::Reader().parse(hncstd::string(&writeBuf[0]), message);
-    _ASSERTE(result && "Failed to parse JSON message");
-    if (!result) {
-        return false;
-    }
-    std::cout << "[CDPPipe_Windows::Write()] : " << message.toStyledString() << std::endl;
+    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
+    std::cout << "[CDPPipe_Windows::Write()] : " << message.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -311,7 +305,7 @@ bool CDPPipe_Windows::Write(const hncstd::string& command)
     return true;
 }
 
-bool CDPPipe_Windows::Read(hncstd::string& message)
+bool CDPPipe_Windows::Read(std::string& message)
 {
     if (m_MessageQueue.size() > 0) {
         message = m_MessageQueue.front();
@@ -377,18 +371,13 @@ bool CDPPipe_Windows::Read(hncstd::string& message)
 
     auto it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
     while (it != byteBuf.end()) {
-        hncstd::string str(byteBuf.begin(), it);
+        std::string str(byteBuf.begin(), it);
         m_MessageQueue.push(str);
         byteBuf.erase(byteBuf.begin(), it + 1);
         it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-        Json::Value jmessage;
-        bool result = Json::Reader().parse(str, jmessage);
-        _ASSERTE(result && "Failed to parse JSON jmessage");
-        if (!result) {
-            return false;
-        }
-        std::cout << "[CDPPipe_Windows::Read()] : " << jmessage.toStyledString() << std::endl;
+    nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
+    std::cout << "[CDPPipe_Windows::Read()] : " << jmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     }
 
@@ -420,14 +409,14 @@ public:
     virtual bool Launch() override;
     virtual void Exit() override;
     virtual void SetTimeout(uint32_t milliseconds) override;
-    virtual bool Write(const hncstd::string& command) override;
-    virtual bool Read(hncstd::string& message) override;
+    virtual bool Write(const std::string& command) override;
+    virtual bool Read(std::string& message) override;
     
 private:
     pid_t m_PID;
     int m_WriteFD; // 두 번째 파이프: fd 4 (쓰기)
     int m_ReadFD; // 첫 번째 파이프: fd 3 (읽기)
-    std::queue<hncstd::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
+    std::queue<std::string> m_MessageQueue; // m_ReadFD로부터 읽은 메시지 큐
     std::unique_ptr<timeval> m_Timeout; // 타임아웃설정(초), nullptr이면 타임아웃 없음
 }; // class CDPPipe_Linux
 
@@ -546,20 +535,15 @@ void CDPPipe_Linux::SetTimeout(uint32_t milliseconds) /*override*/
     }
 }
 
-bool CDPPipe_Linux::Write(const hncstd::string& command)
+bool CDPPipe_Linux::Write(const std::string& command)
 {
     std::vector<char> writeBuf;
     writeBuf.assign(command.begin(), command.end());
     writeBuf.push_back('\0');
 
 #if defined(DEBUG) || defined(_DEBUG)
-    Json::Value message;
-    bool result = Json::Reader().parse(hncstd::string(&writeBuf[0]), message);
-    _ASSERTE(result && "Failed to parse JSON message");
-    if (!result) {
-        return false;
-    }
-    std::cout << "[CDPPipe_Linux::Write()] : " << message.toStyledString() << std::endl;
+    nlohmann::json message = nlohmann::json::parse(&writeBuf[0]); 
+    std::cout << "[CDPPipe_Linux::Write()] : " << message.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
 
     size_t totalWritten = 0;
@@ -598,7 +582,7 @@ bool CDPPipe_Linux::Write(const hncstd::string& command)
     return true;
 }
 
-bool CDPPipe_Linux::Read(hncstd::string& message)
+bool CDPPipe_Linux::Read(std::string& message)
 {
     if (m_MessageQueue.size() > 0) {
         message = m_MessageQueue.front();
@@ -650,18 +634,13 @@ bool CDPPipe_Linux::Read(hncstd::string& message)
 
     auto it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
     while (it != byteBuf.end()) {
-        hncstd::string str(byteBuf.begin(), it);
+        std::string str(byteBuf.begin(), it);
         m_MessageQueue.push(str);
         byteBuf.erase(byteBuf.begin(), it + 1);
         it = std::find(byteBuf.begin(), byteBuf.end(), '\0');
 #if defined(DEBUG) || defined(_DEBUG)
-        Json::Value jmessage;
-        bool result = Json::Reader().parse(str, jmessage);
-        _ASSERTE(result && "Failed to parse JSON jmessage");
-        if (!result) {
-            return false;
-        }
-        std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.toStyledString() << std::endl;
+        nlohmann::json jmessage = nlohmann::json::parse(str.c_str());
+        std::cout << "[CDPPipe_Linux::Read()] : " << jmessage.dump(4) << std::endl;
 #endif // #if defined(DEBUG) || defined(_DEBUG)
     }
 
@@ -676,8 +655,8 @@ bool CDPPipe_Linux::Read(hncstd::string& message)
 
 class CDPManager
 {
-public:
-    static hncstd::string W2UTF8(const hncstd::wstring& wstr) {
+private:
+    static std::string _W2UTF8(const std::wstring& wstr) {
         std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
         return converter.to_bytes(wstr);
     }
@@ -698,56 +677,56 @@ public:
     void Exit();
     void SetTimeout(uint32_t milliseconds = 5000);
     bool Navegate(
-        const hncstd::wstring& url, 
+        const std::wstring& url, 
         const std::pair<int, int>& viewportSize = std::make_pair(-1, -1)
     );
     bool CloseTab();
     bool Screenshot(
-        const hncstd::wstring& resultFilePath,
-        const hncstd::wstring& imageType = L"png",
+        const std::wstring& resultFilePath,
+        const std::wstring& imageType = L"png",
         const std::pair<int, int>& clipPos = std::make_pair(-1, -1),
         const std::pair<int, int>& clipSize = std::make_pair(-1, -1)
     );
     bool PrintToPDF(
-        const hncstd::wstring& resultFilePath,
+        const std::wstring& resultFilePath,
         double margin = 0.4F,
         bool landscape = false
     );
 
 private:
-    Json::Value _Wait(int id);
-    Json::Value _Wait(const hncstd::string& method = "Page.loadEventFired");
+    nlohmann::json _Wait(int id);
+    nlohmann::json _Wait(const std::string& method = "Page.loadEventFired");
     bool _Waits(
-        const std::vector<hncstd::string>& methods = {"Page.loadEventFired", "Network.loadingFinished"}
+        const std::vector<std::string>& methods = {"Page.loadEventFired", "Network.loadingFinished"}
     );
-    void _SaveFile(const hncstd::wstring& resultFilePath, const hncstd::string& base64Str);
+    void _SaveFile(const std::wstring& resultFilePath, const std::string& base64Str);
 
 private:
     template<typename... Args>
-    hncstd::string _Format(const hncstd::string& format, Args... args) {
+    std::string _Format(const std::string& format, Args... args) {
         std::size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1; // Extra space for '\0'
         std::unique_ptr<char[]> buf(new char[size]);
         snprintf(buf.get(), size, format.c_str(), args...);
-        return hncstd::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+        return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
     }
 
 private:
     const int TIMEOUT_SEC;
-    const hncstd::string Target_createTarget;
-    const hncstd::string Target_attachToTarget;
-    const hncstd::string Target_closeTarget;
-    const hncstd::string Page_enable;
-    const hncstd::string Network_enable;
-    const hncstd::string Emulation_setDeviceMetricsOverride;
-    const hncstd::string Page_navigate;
-    const hncstd::string Page_getLayoutMetrics;
-    const hncstd::string Page_captureScreenshot;
-    const hncstd::string Page_printToPDF;
+    const std::string Target_createTarget;
+    const std::string Target_attachToTarget;
+    const std::string Target_closeTarget;
+    const std::string Page_enable;
+    const std::string Network_enable;
+    const std::string Emulation_setDeviceMetricsOverride;
+    const std::string Page_navigate;
+    const std::string Page_getLayoutMetrics;
+    const std::string Page_captureScreenshot;
+    const std::string Page_printToPDF;
 
 private:
     int m_ID;
-    hncstd::string m_TargetID;
-    hncstd::string m_SessionID;
+    std::string m_TargetID;
+    std::string m_SessionID;
 
 private:
     std::unique_ptr<CDPPipe> m_Pipe;
@@ -893,21 +872,16 @@ CDPManager::~CDPManager()
     Exit();
 }
 
-Json::Value CDPManager::_Wait(int id)
+nlohmann::json CDPManager::_Wait(int id)
 {
-    hncstd::string message;
-    Json::Reader reader;
+    std::string message;
     while (true) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        Json::Value jmessage;
-        if (!reader.parse(message, jmessage)) {
-            break;
-        }
-
-        if (jmessage.isMember("error")) {
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
             return jmessage;
         } else if (jmessage["id"] == id) {
             return jmessage;
@@ -916,24 +890,19 @@ Json::Value CDPManager::_Wait(int id)
         }
     }
 
-    return Json::Value();
+    return nlohmann::json();
 }
 
-Json::Value CDPManager::_Wait(const hncstd::string& method /*= "Page.loadEventFired"*/)
+nlohmann::json CDPManager::_Wait(const std::string& method /*= "Page.loadEventFired"*/)
 {
-    hncstd::string message;
-    Json::Reader reader;
+    std::string message;
     while (true) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        Json::Value jmessage;
-        if (!reader.parse(message, jmessage)) {
-            break;
-        }
-
-        if (jmessage.isMember("error")) {
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
             return jmessage;
         } else if (jmessage["method"] == method) {
             return jmessage;
@@ -942,30 +911,25 @@ Json::Value CDPManager::_Wait(const hncstd::string& method /*= "Page.loadEventFi
         }
     }
 
-    return Json::Value();
+    return nlohmann::json();
 }
 
 bool CDPManager::_Waits(
-    const std::vector<hncstd::string>& methods /*= {"Page.loadEventFired", "Network.loadingFinished"}*/
+    const std::vector<std::string>& methods /*= {"Page.loadEventFired", "Network.loadingFinished"}*/
 )
 {
-    std::vector<hncstd::string> emethods(methods);
-    hncstd::string message;
-    Json::Reader reader;
+    std::vector<std::string> emethods(methods);
+    std::string message;
     while (!emethods.empty()) {
         if (!m_Pipe->Read(message)) {
             break;
         }
 
-        Json::Value jmessage;
-        if (!reader.parse(message, jmessage)) {
-            return false;
-        }
-
-        if (jmessage.isMember("error")) {
+        nlohmann::json jmessage = nlohmann::json::parse(message);
+        if (jmessage.contains("error")) {
             return false;
         } else {
-            auto it = std::find(emethods.begin(), emethods.end(), jmessage["method"].asCString());
+            auto it = std::find(emethods.begin(), emethods.end(), jmessage["method"]);
             if (it != emethods.end()) {
                 emethods.erase(it);
             } else {
@@ -996,7 +960,7 @@ void CDPManager::SetTimeout(uint32_t milliseconds /*= 5000*/)
 }
 
 bool CDPManager::Navegate(
-    const hncstd::wstring& url, 
+    const std::wstring& url, 
     const std::pair<int, int>& viewportSize /*= std::make_pair(-1, -1)*/
 )
 {
@@ -1005,11 +969,11 @@ bool CDPManager::Navegate(
     if (!result) {
         return false;
     }
-    Json::Value jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    hncstd::string targetId = jmessage["result"]["targetId"].asCString();
+    std::string targetId = jmessage["result"]["targetId"].get<std::string>();
 
     // 탭 연결
     result = m_Pipe->Write(_Format(Target_attachToTarget, ++m_ID, targetId.c_str()));
@@ -1017,10 +981,10 @@ bool CDPManager::Navegate(
         return false;
     }
     jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    hncstd::string sessionId = jmessage["result"]["sessionId"].asCString();
+    std::string sessionId = jmessage["result"]["sessionId"].get<std::string>();
 
     // 페이지 이벤트 활성화
     result = m_Pipe->Write(_Format(Page_enable, ++m_ID, sessionId.c_str()));
@@ -1055,14 +1019,14 @@ bool CDPManager::Navegate(
     }
 
     // 페이지 로드
-    result = m_Pipe->Write(_Format(Page_navigate, ++m_ID, W2UTF8(url).c_str(), sessionId.c_str()));
+    result = m_Pipe->Write(_Format(Page_navigate, ++m_ID, _W2UTF8(url).c_str(), sessionId.c_str()));
     if (!result) {
         return false;
     }
 
     // "Page.loadEventFired" 이벤트 대기
     jmessage = _Wait("Page.loadEventFired");
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
     // "Page.loadEventFired" && "Network.loadingFinished" 이벤트 대기 
@@ -1084,8 +1048,8 @@ bool CDPManager::CloseTab()
         return false;
     }
 
-    Json::Value jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
 
@@ -1093,8 +1057,8 @@ bool CDPManager::CloseTab()
 }
 
 bool CDPManager::Screenshot(
-    const hncstd::wstring& resultFilePath,
-    const hncstd::wstring& imageType /*= L"png"*/,
+    const std::wstring& resultFilePath,
+    const std::wstring& imageType /*= L"png"*/,
     const std::pair<int, int>& clipPos /*= std::make_pair(-1, -1)*/,
     const std::pair<int, int>& clipSize /*= std::make_pair(-1, -1)*/
 )
@@ -1104,15 +1068,15 @@ bool CDPManager::Screenshot(
     if (!result) {
         return false;
     }
-    Json::Value jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
 
     // 스크린샷 캡처
     std::pair<int, int> contentSize = std::make_pair(
-        jmessage["result"]["contentSize"]["width"].asInt(),
-        jmessage["result"]["contentSize"]["height"].asInt()
+        jmessage["result"]["contentSize"]["width"].get<int>(),
+        jmessage["result"]["contentSize"]["height"].get<int>()
     );
     int clipX = (clipPos.first == -1) ? 0 : clipPos.first;
     int clipY = (clipPos.second == -1) ? 0 : clipPos.second;
@@ -1122,7 +1086,7 @@ bool CDPManager::Screenshot(
         _Format(
             Page_captureScreenshot, 
             ++m_ID, 
-            W2UTF8(imageType).c_str(), 
+            _W2UTF8(imageType).c_str(), 
             clipX, 
             clipY, 
             clipWidth, 
@@ -1134,10 +1098,10 @@ bool CDPManager::Screenshot(
         return false;
     }
     jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    hncstd::string data = jmessage["result"]["data"].asCString();
+    std::string data = jmessage["result"]["data"].get<std::string>();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
@@ -1146,12 +1110,12 @@ bool CDPManager::Screenshot(
 }
         
 bool CDPManager::PrintToPDF(
-    const hncstd::wstring& resultFilePath,
+    const std::wstring& resultFilePath,
     double margin /*= 0.4F*/,
     bool landscape /*= false*/
 )
 {
-    auto boolToString = [](bool value) -> hncstd::string {
+    auto boolToString = [](bool value) -> std::string {
         return value ? "true" : "false";
     };
 
@@ -1177,11 +1141,11 @@ bool CDPManager::PrintToPDF(
         return false;
     }
 
-    Json::Value jmessage = _Wait(m_ID);
-    if (jmessage.empty() || jmessage.isMember("error")) {
+    nlohmann::json jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
         return false;
     }
-    hncstd::string data = jmessage["result"]["data"].asCString();
+    std::string data = jmessage["result"]["data"].get<std::string>();
 
     // 파일로 저장
     _SaveFile(resultFilePath, data);
@@ -1189,13 +1153,13 @@ bool CDPManager::PrintToPDF(
     return true;
 }
 
-void CDPManager::_SaveFile(const hncstd::wstring& resultFilePath, const hncstd::string& base64Str)
+void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string& base64Str)
 {
-    auto base64Decode = [](const hncstd::string &encoded_string) -> std::vector<unsigned char>
+    auto base64Decode = [](const std::string &encoded_string) -> std::vector<unsigned char>
     {
-        static const hncstd::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                                   "abcdefghijklmnopqrstuvwxyz"
-                                                   "0123456789+/";
+        static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                                "abcdefghijklmnopqrstuvwxyz"
+                                                "0123456789+/";
         auto is_base64 = [](unsigned char c) -> bool
         {
             return (isalnum(c) || (c == '+') || (c == '/'));
@@ -1246,7 +1210,7 @@ void CDPManager::_SaveFile(const hncstd::wstring& resultFilePath, const hncstd::
     };
 
     std::vector<unsigned char> decodedData = base64Decode(base64Str);
-    std::ofstream file(W2UTF8(resultFilePath), std::ios::binary);
+    std::ofstream file(_W2UTF8(resultFilePath), std::ios::binary);
     file.write(reinterpret_cast<const char*>(decodedData.data()), decodedData.size());
     file.close();
 }
@@ -1255,15 +1219,15 @@ void CDPManager::_SaveFile(const hncstd::wstring& resultFilePath, const hncstd::
 // --------------------------------------------------------------------------------
 
 bool ConvertHtmlModule::HtmlToImage(
-    const hncstd::wstring& htmlURL, 
-    const hncstd::wstring& resultFilePath, 
-    const hncstd::wstring& imageType, 
-    int clipX, 
-    int clipY, 
-    int clipWidth, 
-    int clipHeight, 
-    int viewportWidth, 
-    int vieweportHeight
+        const wchar_t* htmlURL, 
+        const wchar_t* resultFilePath, 
+        const wchar_t* imageType, 
+        int clipX, 
+        int clipY, 
+        int clipWidth, 
+        int clipHeight, 
+        int viewportWidth, 
+        int vieweportHeight
 ) {
     CDPManager cdpManager;
     if (!cdpManager.Launch()) {
@@ -1281,9 +1245,9 @@ bool ConvertHtmlModule::HtmlToImage(
 }
 
 bool ConvertHtmlModule::HtmlToPdf(
-    const hncstd::wstring& htmlURL,
-    const hncstd::wstring& resultFilePath,
-    const hncstd::wstring& margin,
+    const wchar_t* htmlURL,
+    const wchar_t* resultFilePath,
+    const wchar_t* margin,
     int isLandScape
 ) {
     CDPManager cdpManager;
@@ -1296,8 +1260,8 @@ bool ConvertHtmlModule::HtmlToPdf(
     }
 
     double marginValue = 0.4F;
-    if (!margin.empty()) {
-        marginValue = std::stod(CDPManager::W2UTF8(margin));
+    if (margin != nullptr) {
+        marginValue = std::stod(margin);
     }
     bool landscape = (isLandScape == 1) ? true : false;
     if (!cdpManager.PrintToPDF(resultFilePath, marginValue, landscape)) {

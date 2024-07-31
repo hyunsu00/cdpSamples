@@ -1,13 +1,13 @@
-﻿#ifndef __CONVERT_HTML_MODULE_H__
+﻿﻿#ifndef __CONVERT_HTML_MODULE_H__
 #define __CONVERT_HTML_MODULE_H__
 
 class ConvertHtmlModule 
 {
 public:
     static bool HtmlToImage(
-        const hncstd::wstring& htmlURL, 
-        const hncstd::wstring& resultFilePath, 
-        const hncstd::wstring& imageType, 
+        const wchar_t* htmlURL, 
+        const wchar_t* resultFilePath, 
+        const wchar_t* imageType, 
         int clipX, 
         int clipY, 
         int clipWidth, 
@@ -17,12 +17,11 @@ public:
     );
 
     static bool HtmlToPdf(
-        const hncstd::wstring& htmlURL,
-        const hncstd::wstring& resultFilePath,
-        const hncstd::wstring& margin,
+        const wchar_t* htmlURL,
+        const wchar_t* resultFilePath,
+        const wchar_t* margin,
         int isLandScape
     );
 };
 
 #endif // #ifndef __CONVERT_HTML_MODULE_H__
-
