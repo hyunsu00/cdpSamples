@@ -1282,9 +1282,9 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
 // --------------------------------------------------------------------------------
 
 bool ConvertHtmlModule::HtmlToImage(
-    const wchar_t* htmlURL,
-    const wchar_t* resultFilePath,
-    const wchar_t* imageType,
+    const std::wstring& htmlURL,
+    const std::wstring& resultFilePath,
+    const std::wstring& imageType,
     int clipX,
     int clipY,
     int clipWidth,
@@ -1308,9 +1308,9 @@ bool ConvertHtmlModule::HtmlToImage(
 }
 
 bool ConvertHtmlModule::HtmlToPdf(
-    const wchar_t* htmlURL,
-    const wchar_t* resultFilePath,
-    const wchar_t* margin,
+    const std::wstring& htmlURL,
+    const std::wstring& resultFilePath,
+    const std::wstring& margin,
     int isLandScape
 ) {
     CDPManager cdpManager;
@@ -1323,8 +1323,8 @@ bool ConvertHtmlModule::HtmlToPdf(
     }
 
     double marginValue = 0.4F;
-    if (margin != nullptr) {
-        marginValue = std::stod(margin);
+    if (!margin.empty()) {
+        marginValue = std::stod(Converter::W2UTF8(margin));
     }
     bool landscape = (isLandScape == 1) ? true : false;
     if (!cdpManager.PrintToPDF(resultFilePath, marginValue, landscape)) {

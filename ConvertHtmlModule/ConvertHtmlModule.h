@@ -5,21 +5,21 @@ class ConvertHtmlModule
 {
 public:
     static bool HtmlToImage(
-        const wchar_t* htmlURL, 
-        const wchar_t* resultFilePath, 
-        const wchar_t* imageType, 
-        int clipX, 
-        int clipY, 
-        int clipWidth, 
-        int clipHeight, 
-        int viewportWidth, 
+        const std::wstring& htmlURL,
+        const std::wstring& resultFilePath,
+        const std::wstring& imageType,
+        int clipX,
+        int clipY,
+        int clipWidth,
+        int clipHeight,
+        int viewportWidth,
         int vieweportHeight
     );
 
     static bool HtmlToPdf(
-        const wchar_t* htmlURL,
-        const wchar_t* resultFilePath,
-        const wchar_t* margin,
+        const std::wstring& htmlURL,
+        const std::wstring& resultFilePath,
+        const std::wstring& margin,
         int isLandScape
     );
 };
