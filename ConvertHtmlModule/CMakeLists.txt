@@ -5,7 +5,7 @@ message(STATUS "-------------------------")
 # 삭제 작업을 수행하는 명령 추가
 message(STATUS "Starting to remove chrome directory...")
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/chrome
+  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/chrome
   RESULT_VARIABLE remove_result
 )
 if(NOT ${remove_result} EQUAL 0)
@@ -13,12 +13,12 @@ if(NOT ${remove_result} EQUAL 0)
   
   if(WIN32)
     execute_process(
-      COMMAND cmd /c if exist "${CMAKE_BINARY_DIR}/chrome" rmdir /s /q "${CMAKE_BINARY_DIR}/chrome"
+      COMMAND cmd /c if exist "${CMAKE_CURRENT_BINARY_DIR}/chrome" rmdir /s /q "${CMAKE_CURRENT_BINARY_DIRCMAKE_CURRENT_BINARY_DIR}/chrome"
       RESULT_VARIABLE remove_result
     )
   else()
     execute_process(
-      COMMAND sh -c "rm -rf '${CMAKE_BINARY_DIR}/chrome'"
+      COMMAND sh -c "rm -rf '${CMAKE_CURRENT_BINARY_DIR}/chrome'"
       RESULT_VARIABLE remove_result
     )
   endif()
@@ -34,10 +34,17 @@ endif()
 
 # 복사 작업을 수행하는 명령 추가
 message(STATUS "Starting to copy chrome directory...")
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/chrome ${CMAKE_BINARY_DIR}/chrome
-  RESULT_VARIABLE copy_result
-)
+if(WIN32)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/chrome/chrome-headless-shell-win32 ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-win32
+    RESULT_VARIABLE copy_result
+  )
+else()
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/chrome/chrome-headless-shell-linux64 ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-linux64
+    RESULT_VARIABLE copy_result
+  )
+endif()
 if(NOT ${copy_result} EQUAL 0)
   message(FATAL_ERROR "Failed to copy chrome directory: ${copy_result}")
 else()
@@ -73,7 +80,11 @@ add_executable(ConvertHtmlModule ${SOURCES})
 # 실행 파일을 설치하도록 지정
 install(TARGETS ConvertHtmlModule DESTINATION bin)
 # chrome 폴더를 설치하도록 지정
-install(DIRECTORY ${CMAKE_BINARY_DIR}/chrome DESTINATION bin)
+if(WIN32)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-win32 DESTINATION bin/chrome USE_SOURCE_PERMISSIONS)
+else()
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-linux64 DESTINATION bin/chrome USE_SOURCE_PERMISSIONS)
+endif()
 
 # CPack 설정
 set(CPACK_PACKAGE_NAME "ConvertHtmlModule")
