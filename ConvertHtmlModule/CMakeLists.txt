@@ -126,39 +126,60 @@ endif()
 include(CPack)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # /etc/os-release 파일을 확인하여 distribution 이름을 설정한다.
-    # 패키지 네임에 이를 추가하여 패키지 파일 이름만 가지고도 어떤 배포판용인지
-    # 확인을 쉽게 할 수 있도록 한다.
-    execute_process(
-        COMMAND bash -c "(eval cat /etc/os-release; case $NAME in *CentOS*) echo centos ;; *Debian*) echo debian ;; *Fedora*) echo fedora ;; *Ubuntu*) echo ubuntu ;; *Amazon*) echo amazon ;; *Rocky*) echo rockylinux ;; *) echo unknown ;; esac)"
-        OUTPUT_VARIABLE DISTRO_NAME
-    )
-    message(STATUS "Distribution name: ${DISTRO_NAME}")
+  # /etc/os-release 파일을 확인하여 distribution 이름을 설정한다.
+  # 패키지 네임에 이를 추가하여 패키지 파일 이름만 가지고도 어떤 배포판용인지
+  # 확인을 쉽게 할 수 있도록 한다.
+  execute_process(
+      COMMAND bash -c "NAME=$(grep '^NAME=' /etc/os-release | cut -d '=' -f 2 | tr -d '\"') && case \"$NAME\" in 
+          *CentOS*) echo centos ;; 
+          *Debian*) echo debian ;; 
+          *Fedora*) echo fedora ;; 
+          *Ubuntu*) echo ubuntu ;; 
+          *Amazon*) echo amazon ;; 
+          *Rocky*) echo rockylinux ;; 
+          *) echo unknown ;; 
+      esac"
+      OUTPUT_VARIABLE DISTRO_NAME
+  )
+  string(STRIP ${DISTRO_NAME} DISTRO_NAME)
+  set(OS_NAME ${CPACK_SYSTEM_NAME})
+  string(TOLOWER ${OS_NAME} OS_NAME)
 
-    # string(STRIP ${DISTRO_NAME} DISTRO_NAME)
-    # set(OS_NAME ${CPACK_SYSTEM_NAME})
-    # string(TOLOWER ${OS_NAME} OS_NAME)
+  set(package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.tar.gz")
+  set(debug_package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-debug-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.tar.gz")
 
-    # set(package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.zip")
-    # set(debug_package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-debug-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.zip")
-    # add_custom_target(package_with_debug
-    #     # package 타겟은 add_dependencies로 제대로된 dependecy가 걸리지 않는다.
-    #     # 그래서 직접 package 빌드 커맨드를 실행한후 debug 파일을 분리한다.
-    #     #
-    #     # make의 package 타겟을 사용하면 편리하지만, 압축에 시간이 많이 걸리는 것 같다.
-    #     # 패키징에만 40분 정도 소요된다.
-    #     # 그래서 임시 디렉토리에 install한 후 직접 7z 커맨드로 압축하는 룰을 작성한다.
-    #     # 기존 package 타겟을 사용하려면 아래 커맨드를 사용하라.
-    #     # COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- package
-    #     COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
-    #     COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
-    #     COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
-    #             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
-    #     COMMAND ${CMAKE_COMMAND} -E chdir _package_build/opt/hnc
-    #             zip -9r "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" hoffice${hwp_VERSION_MAJOR}
-    #     COMMAND cp "${package_file_name}" "${debug_package_file_name}"
-    #     COMMAND zip -d "${package_file_name}" -r '*.debug'
-    #     COMMAND zip -d "${debug_package_file_name}" '*' -x '*.debug'
-    #     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    # )
+  # 메시지 출력
+  message(STATUS "DISTRO_NAME: ${DISTRO_NAME}")
+  message(STATUS "CPACK_SYSTEM_NAME: ${CPACK_SYSTEM_NAME}")
+  message(STATUS "OS_NAME: ${OS_NAME}")
+  message(STATUS "package_file_name: ${package_file_name}")
+  message(STATUS "debug_package_file_name: ${debug_package_file_name}")
+
+  add_custom_target(package_with_debug
+    # package 타겟은 add_dependencies로 제대로된 dependecy가 걸리지 않는다.
+    # 그래서 직접 package 빌드 커맨드를 실행한후 debug 파일을 분리한다.
+    #
+    # make의 package 타겟을 사용하면 편리하지만, 압축에 시간이 많이 걸리는 것 같다.
+    # 패키징에만 40분 정도 소요된다.
+    # 그래서 임시 디렉토리에 install한 후 직접 7z 커맨드로 압축하는 룰을 작성한다.
+    # 기존 package 타겟을 사용하려면 아래 커맨드를 사용하라.
+    # COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- package
+    COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
+    COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
+    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
+            ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
+    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+    #         tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+            tar -I pigz -cf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    # COMMAND cp "${package_file_name}" "${debug_package_file_name}"
+    # # *.debug 파일 삭제
+    # # COMMAND tar --delete --file="${package_file_name}" '*.debug'
+    # COMMAND tar -I pigz --delete --file="${package_file_name}" '*.debug'
+    # # *.debug  이외 파일 삭제
+    # # COMMAND tar --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
+    # COMMAND tar -I pigz --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
+    
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  )
 endif() # if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
