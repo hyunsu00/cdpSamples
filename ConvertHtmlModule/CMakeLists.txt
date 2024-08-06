@@ -76,9 +76,29 @@ else()
 endif()
 
 # 실행 파일 생성
-add_executable(ConvertHtmlModule ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES})
 # 실행 파일을 설치하도록 지정
-install(TARGETS ConvertHtmlModule DESTINATION bin)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+# .debug 파일을 생성하고 실행 파일과 함께 설치하도록 지정
+install(CODE "
+    # execute_process 커맨드는 COMMAND를 병렬 수행하므로 아래 커맨드를
+    # 따로따로 execute_process 커맨드로 실행해야 한다.
+    # objcopy에 --only-keep-debug 옵션을 사용하지 않고 그냥 cp한다.
+    # 파일 크기가 많이 차이나지 않으므로 원본 파일을 저장해두면 활용도가
+    # 높을 것이다.
+    execute_process(
+        COMMAND cp \"${PROJECT_NAME}\" \"${PROJECT_NAME}.debug\"
+        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+    )
+    execute_process(
+        COMMAND strip --strip-unneeded --remove-section=.comment --remove-section=.note  \"${PROJECT_NAME}\"
+        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+    )
+    execute_process(
+        COMMAND objcopy \"--add-gnu-debuglink=${PROJECT_NAME}.debug\" \"${PROJECT_NAME}\"
+        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+    )
+")
 # chrome 폴더를 설치하도록 지정
 if(WIN32)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-win32 DESTINATION bin/chrome USE_SOURCE_PERMISSIONS)
@@ -87,7 +107,7 @@ else()
 endif()
 
 # CPack 설정
-set(CPACK_PACKAGE_NAME "ConvertHtmlModule")
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION "1.0.0")
 set(CPACK_PACKAGE_CONTACT "Kim HyunSu <hyun955807@naver.com>")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kim HyunSu <hyun955807@naver.com>") # Debian 패키지에 필요
