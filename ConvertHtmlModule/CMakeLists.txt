@@ -88,17 +88,18 @@ install(CODE "
     # 높을 것이다.
     execute_process(
         COMMAND cp \"${PROJECT_NAME}\" \"${PROJECT_NAME}.debug\"
-        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+        WORKING_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin\"
     )
     execute_process(
         COMMAND strip --strip-unneeded --remove-section=.comment --remove-section=.note  \"${PROJECT_NAME}\"
-        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+        WORKING_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin\"
     )
     execute_process(
         COMMAND objcopy \"--add-gnu-debuglink=${PROJECT_NAME}.debug\" \"${PROJECT_NAME}\"
-        WORKING_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/bin\"
+        WORKING_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin\"
     )
 ")
+
 # chrome 폴더를 설치하도록 지정
 if(WIN32)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/chrome/chrome-headless-shell-win32 DESTINATION bin/chrome USE_SOURCE_PERMISSIONS)
@@ -145,8 +146,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(OS_NAME ${CPACK_SYSTEM_NAME})
   string(TOLOWER ${OS_NAME} OS_NAME)
 
-  set(package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.tar.gz")
-  set(debug_package_file_name "${CPACK_PACKAGE_NAME}${hwp_PRODUCT_NAME}-debug-${CPACK_PACKAGE_VERSION}-${OS_NAME}-${DISTRO_NAME}.tar.gz")
+  # set(package_file_name "${CPACK_PACKAGE_FILE_NAME}.tar.gz")
+  # set(debug_package_file_name "${CPACK_PACKAGE_FILE_NAME}-debug.tar.gz")
+  set(package_file_name "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
+  set(debug_package_file_name "${CPACK_PACKAGE_NAME}-debug-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
 
   # 메시지 출력
   message(STATUS "DISTRO_NAME: ${DISTRO_NAME}")
@@ -155,31 +158,36 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   message(STATUS "package_file_name: ${package_file_name}")
   message(STATUS "debug_package_file_name: ${debug_package_file_name}")
 
-  add_custom_target(package_with_debug
-    # package 타겟은 add_dependencies로 제대로된 dependecy가 걸리지 않는다.
-    # 그래서 직접 package 빌드 커맨드를 실행한후 debug 파일을 분리한다.
-    #
-    # make의 package 타겟을 사용하면 편리하지만, 압축에 시간이 많이 걸리는 것 같다.
-    # 패키징에만 40분 정도 소요된다.
-    # 그래서 임시 디렉토리에 install한 후 직접 7z 커맨드로 압축하는 룰을 작성한다.
-    # 기존 package 타겟을 사용하려면 아래 커맨드를 사용하라.
-    # COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- package
+  add_custom_target(package_with_debug_single
     COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
     COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
     COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
-    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-    #         tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+            tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    COMMAND cp "${package_file_name}" "${debug_package_file_name}"
+    # *.debug 파일 삭제
+    COMMAND tar --delete --file="${package_file_name}" '*.debug'
+    # *.debug  이외 파일 삭제
+    COMMAND tar --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+
+  add_custom_target(package_with_debug_parallel
+    COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
+    COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
+    # 
+    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
+            ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
+    #
     COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
             tar -I pigz -cf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
-    # COMMAND cp "${package_file_name}" "${debug_package_file_name}"
-    # # *.debug 파일 삭제
-    # # COMMAND tar --delete --file="${package_file_name}" '*.debug'
-    # COMMAND tar -I pigz --delete --file="${package_file_name}" '*.debug'
-    # # *.debug  이외 파일 삭제
-    # # COMMAND tar --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
-    # COMMAND tar -I pigz --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
-    
+    #
+    COMMAND cp "${package_file_name}" "${debug_package_file_name}"
+    # *.debug 파일 삭제
+    COMMAND tar -I pigz --delete --file="${package_file_name}" '*.debug'
+    # *.debug  이외 파일 삭제
+    COMMAND tar -I pigz --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 endif() # if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
