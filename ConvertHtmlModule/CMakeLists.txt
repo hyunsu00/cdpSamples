@@ -163,13 +163,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
     COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
-    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-            tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
-    COMMAND cp "${package_file_name}" "${debug_package_file_name}"
-    # *.debug 파일 삭제
-    COMMAND tar --delete --file="${package_file_name}" '*.debug'
-    # *.debug  이외 파일 삭제
-    COMMAND tar --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
+     # *.debug 파일 제외 압축
+    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+    #         tar --exclude='*.debug' -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    # *.debug 파일만 압축
+    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+    #         tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" -C . $(find . -name '*.debug')
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
