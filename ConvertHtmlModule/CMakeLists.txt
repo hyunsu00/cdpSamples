@@ -122,26 +122,6 @@ if(WIN32)
   set(CPACK_GENERATOR "NSIS")
 endif()
 
-#####
-# 수정요망
-# # CPack 실행 후 패키지 파일을 복사하는 스크립트를 생성합니다
-# file(WRITE "${CMAKE_BINARY_DIR}/copy_package.cmake"
-# "execute_process(
-#     COMMAND ${CMAKE_COMMAND} -E copy 
-#         \"\${CPACK_PACKAGE_FILE_NAME}.\${CPACK_PACKAGE_FILE_EXTENSION}\"
-#         \"새로운_패키지_이름.\${CPACK_PACKAGE_FILE_EXTENSION}\"
-#     WORKING_DIRECTORY \${CMAKE_BINARY_DIR}
-# )
-# message(STATUS \"패키지 파일을 새 이름으로 복사했습니다: 새로운_패키지_이름.\${CPACK_PACKAGE_FILE_EXTENSION}\")
-# ")
-
-# # CPack 후처리 스크립트 설정
-# set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/CPackConfig.cmake")
-# file(WRITE "${CPACK_PROJECT_CONFIG_FILE}"
-# "set(CPACK_POST_BUILD_SCRIPTS \"${CMAKE_BINARY_DIR}/copy_package.cmake\")
-# ")
-#####
-
 # CPack을 포함
 include(CPack)
 
