@@ -74,4 +74,24 @@ function split_package_single() {
     remove_non_debug_files "${debug_package_file_name}"
 }
 
-split_package_single $1
+# split_package_single $1
+
+mkdir -p ./build
+cd build/
+cmake ..
+make DESTDIR=./_package_build install
+
+# 명령어 존재 여부 확인
+command -v tar >/dev/null 2>&1 || { echo >&2 "tar 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."; exit 1; }
+command -v pigz >/dev/null 2>&1 || { echo >&2 "pigz 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."; exit 1; }
+
+PACKAGE_FOLDER="./_package_build/usr/local/"
+# .debug 파일 제외 tar.gz 압축
+time tar --exclude='*.debug' -czvf remove_debug_files_single.tar.gz -C $PACKAGE_FOLDER .
+time tar --exclude='*.debug' -I pigz -cvf remove_debug_files_parallel.tar.gz -C $PACKAGE_FOLDER .
+
+# .debug 파일만 tar.gz 압축
+DEBUG_FILE_LIST="debug_file_list.txt"
+find $PACKAGE_FOLDER -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed "s|^\\$PACKAGE_FOLDER||" > $DEBUG_FILE_LIST
+time tar -czvf debug_files_single.tar.gz -C $PACKAGE_FOLDER -T $DEBUG_FILE_LIST
+time tar -I pigz -cvf debug_files_parallel.tar.gz -C $PACKAGE_FOLDER -T $DEBUG_FILE_LIST

@@ -161,32 +161,38 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   add_custom_target(package_with_debug_single
     COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
     COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
+    # DESTDIR 설치 디렉토릴를 지정하여 설치
     COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
-     # *.debug 파일 제외 압축
-    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-    #         tar --exclude='*.debug' -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    # *.debug 파일 제외 압축
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
+            tar --exclude='*.debug' -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
     # *.debug 파일만 압축
-    # COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-    #         tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" -C . $(find . -name '*.debug')
+    COMMAND bash -c '
+      find ${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}/||\" > "debug_file_list.txt"
+    '
+    COMMAND bash -c '
+      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${debug_package_file_name}" -C "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
+    '
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
   add_custom_target(package_with_debug_parallel
     COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
     COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
-    # 
+    # DESTDIR 설치 디렉토릴를 지정하여 설치
     COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
-    #
+    # *.debug 파일 제외 압축
     COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-            tar -I pigz -cf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
-    #
-    COMMAND cp "${package_file_name}" "${debug_package_file_name}"
-    # *.debug 파일 삭제
-    COMMAND tar -I pigz --delete --file="${package_file_name}" '*.debug'
-    # *.debug  이외 파일 삭제
-    COMMAND tar -I pigz --delete --file="${debug_package_file_name}" '*' --exclude '*.debug'
+            tar --exclude='*.debug' -I pigz -cvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    # *.debug 파일만 압축
+    COMMAND bash -c '
+      find ${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}/||\" > "debug_file_list.txt"
+    '
+    COMMAND bash -c '
+      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${debug_package_file_name}" -C "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
+    '
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 endif() # if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
