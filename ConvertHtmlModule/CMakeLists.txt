@@ -146,52 +146,59 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(OS_NAME ${CPACK_SYSTEM_NAME})
   string(TOLOWER ${OS_NAME} OS_NAME)
 
-  # set(package_file_name "${CPACK_PACKAGE_FILE_NAME}.tar.gz")
-  # set(debug_package_file_name "${CPACK_PACKAGE_FILE_NAME}-debug.tar.gz")
-  set(package_file_name "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
-  set(debug_package_file_name "${CPACK_PACKAGE_NAME}-debug-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
+  set(CUSTOM_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
+  set(CUSTOM_DEBUG_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-debug-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}.tar.gz")
+  set(CUSTOM_PACKAGE_DIR_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+  set(CUSTOM_PACKAGE_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/${CPACK_SYSTEM_NAME}/TGZ")
 
   # 메시지 출력
+  message(STATUS "CPACK_GENERATOR: ${CPACK_GENERATOR}")
   message(STATUS "DISTRO_NAME: ${DISTRO_NAME}")
   message(STATUS "CPACK_SYSTEM_NAME: ${CPACK_SYSTEM_NAME}")
   message(STATUS "OS_NAME: ${OS_NAME}")
-  message(STATUS "package_file_name: ${package_file_name}")
-  message(STATUS "debug_package_file_name: ${debug_package_file_name}")
+  message(STATUS "CUSTOM_PACKAGE_FILE_NAME: ${CUSTOM_PACKAGE_FILE_NAME}")
+  message(STATUS "CUSTOM_DEBUG_PACKAGE_FILE_NAME: ${CUSTOM_DEBUG_PACKAGE_FILE_NAME}")
 
   add_custom_target(package_with_debug_single
-    COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
-    COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
+    COMMAND ${CMAKE_COMMAND} -E remove_directory _Custom_Packages
+    COMMAND ${CMAKE_COMMAND} -E make_directory _Custom_Packages
     # DESTDIR 설치 디렉토릴를 지정하여 설치
-    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
+    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
+    COMMAND mkdir -p "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
+    COMMAND mv "${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install${CMAKE_INSTALL_PREFIX}/*" "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
+    COMMAND rm -rf "${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install"
     # *.debug 파일 제외 압축
-    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-            tar --exclude='*.debug' -czvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CUSTOM_PACKAGE_INSTALL_PATH}"
+            tar --exclude='*.debug' -czvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" .
     # *.debug 파일만 압축
     COMMAND bash -c '
-      find ${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}/||\" > "debug_file_list.txt"
+      find ${CUSTOM_PACKAGE_INSTALL_PATH} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CUSTOM_PACKAGE_INSTALL_PATH}/||\" > "debug_file_list.txt"
     '
     COMMAND bash -c '
-      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${debug_package_file_name}" -C "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
+      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_DEBUG_PACKAGE_FILE_NAME}" -C "${CUSTOM_PACKAGE_INSTALL_PATH}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
     '
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
   add_custom_target(package_with_debug_parallel
-    COMMAND ${CMAKE_COMMAND} -E remove_directory _package_build
-    COMMAND ${CMAKE_COMMAND} -E make_directory _package_build
+    COMMAND ${CMAKE_COMMAND} -E remove_directory _Custom_Packages
+    COMMAND ${CMAKE_COMMAND} -E make_directory _Custom_Packages
     # DESTDIR 설치 디렉토릴를 지정하여 설치
-    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_package_build"
+    COMMAND env DESTDIR="${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install"
             ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}" -- install
+    COMMAND mkdir -p "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
+    COMMAND mv "${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install${CMAKE_INSTALL_PREFIX}/*" "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
+    COMMAND rm -rf "${CMAKE_CURRENT_BINARY_DIR}/_Custom_Packages/_install"
     # *.debug 파일 제외 압축
-    COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}"
-            tar --exclude='*.debug' -I pigz -cvf "${CMAKE_CURRENT_BINARY_DIR}/${package_file_name}" .
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CUSTOM_PACKAGE_INSTALL_PATH}"
+            tar --exclude='*.debug' -I pigz -cvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" .
     # *.debug 파일만 압축
     COMMAND bash -c '
-      find ${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}/||\" > "debug_file_list.txt"
+      find ${CUSTOM_PACKAGE_INSTALL_PATH} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CUSTOM_PACKAGE_INSTALL_PATH}/||\" > "debug_file_list.txt"
     '
     COMMAND bash -c '
-      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${debug_package_file_name}" -C "${CMAKE_CURRENT_BINARY_DIR}/_package_build${CMAKE_INSTALL_PREFIX}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
+      tar -czvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_DEBUG_PACKAGE_FILE_NAME}" -C "${CUSTOM_PACKAGE_INSTALL_PATH}" -T "${CMAKE_CURRENT_BINARY_DIR}/debug_file_list.txt"
     '
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
