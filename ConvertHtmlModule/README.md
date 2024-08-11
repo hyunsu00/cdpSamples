@@ -48,3 +48,13 @@ $ sudo apt install -qq -y --no-install-recommends libnss3 \
 # 확인요망
 # https://github.com/chromedp/docker-headless-shell/tree/master
 $ apt-get install -y libnspr4 libnss3 libexpat1 libfontconfig1 libuuid1 socat
+
+
+# 병렬 압축
+# 우분투
+$ sudo apt-get install pbzip2
+$ sudo apt-get install pigz
+
+# 레드햇
+$ sudo yum install pigz
+$ sudo yum install pbzip2
