@@ -58,3 +58,4 @@ $ sudo apt-get install pigz
 # 레드햇
 $ sudo yum install pigz
 $ sudo yum install pbzip2
+

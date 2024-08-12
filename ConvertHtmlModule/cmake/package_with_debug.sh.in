@@ -1,10 +1,24 @@
 #!/bin/bash
 
+# CMake로 생성된 스크립트에서 변수를 가져옴
+CUSTOM_PACKAGE_FILE_NAME="@CUSTOM_PACKAGE_FILE_NAME@"
+CUSTOM_DEBUG_PACKAGE_FILE_NAME="@CUSTOM_DEBUG_PACKAGE_FILE_NAME@"
 CUSTOM_PACKAGE_DIR_NAME="@CUSTOM_PACKAGE_DIR_NAME@"
 CUSTOM_PACKAGE_PATH="@CUSTOM_PACKAGE_PATH@"
 CUSTOM_DESTDIR_PATH="@CUSTOM_DESTDIR_PATH@"
 CUSTOM_PACKAGE_INSTALL_PATH="@CUSTOM_PACKAGE_INSTALL_PATH@"
 CMAKE_INSTALL_PREFIX="@CMAKE_INSTALL_PREFIX@"
+
+if [ -z "${CUSTOM_PACKAGE_FILE_NAME}" ] ||
+    [ -z "${CUSTOM_DEBUG_PACKAGE_FILE_NAME}" ] ||
+    [ -z "${CUSTOM_PACKAGE_DIR_NAME}" ] ||
+    [ -z "${CUSTOM_PACKAGE_PATH}" ] ||
+    [ -z "${CUSTOM_DESTDIR_PATH}" ] ||
+    [ -z "${CUSTOM_PACKAGE_INSTALL_PATH}" ] ||
+    [ -z "${CMAKE_INSTALL_PREFIX}" ]; then
+    echo "One or more required variables are not set. Exiting."
+    exit 1
+fi
 
 rm -rf "${CUSTOM_PACKAGE_PATH}"
 mkdir -p "${CUSTOM_PACKAGE_PATH}"
@@ -16,25 +30,117 @@ mv ${CUSTOM_DESTDIR_PATH}${CMAKE_INSTALL_PREFIX}/* "${CUSTOM_PACKAGE_INSTALL_PAT
 rm -rf "${CUSTOM_DESTDIR_PATH}"
 
 # 명령어 존재 여부 확인
-command -v tar >/dev/null 2>&1 || { echo >&2 "tar 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."; exit 1; }
-command -v pigz >/dev/null 2>&1 || { echo >&2 "pigz 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."; exit 1; }
-command -v pbzip2 >/dev/null 2>&1 || { echo >&2 "pbzip2 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."; exit 1; }
-
-# .debug 파일 제외 tar.gz 압축
-time tar --exclude='*.debug' -czvf remove_debug_files_single.tar.gz -C $CUSTOM_PACKAGE_INSTALL_PATH .
-time tar --exclude='*.debug' -I pigz -cvf remove_debug_files_parallel.tar.gz -C $CUSTOM_PACKAGE_INSTALL_PATH .
-
-# .debug 파일 제외 tar.bz2 압축
-time tar --exclude='*.debug' -cjvf remove_debug_files_single.tar.bz2 -C $CUSTOM_PACKAGE_INSTALL_PATH .
-time tar --exclude='*.debug' -I pbzip2 -cvf remove_debug_files_parallel.tar.bz2 -C $CUSTOM_PACKAGE_INSTALL_PATH .
-
+command -v tar >/dev/null 2>&1 || {
+    echo >&2 "tar 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."
+    exit 1
+}
+command -v pigz >/dev/null 2>&1 || {
+    echo >&2 "pigz 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."
+    exit 1
+}
+command -v pbzip2 >/dev/null 2>&1 || {
+    echo >&2 "pbzip2 명령어를 찾을 수 없습니다. 설치 후 다시 시도해주세요."
+    exit 1
+}
 
 DEBUG_FILE_LIST="debug_file_list.txt"
-find $CUSTOM_PACKAGE_INSTALL_PATH -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed "s|^\\$CUSTOM_PACKAGE_INSTALL_PATH/||" > $DEBUG_FILE_LIST
-# .debug 파일만 tar.gz 압축
-time tar -czvf debug_files_single.tar.gz -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
-time tar -I pigz -cvf debug_files_parallel.tar.gz -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+find $CUSTOM_PACKAGE_INSTALL_PATH -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed "s|^\\$CUSTOM_PACKAGE_INSTALL_PATH/||" >$DEBUG_FILE_LIST
 
-# .debug 파일만 tar.bz2 압축
-time tar -cjvf debug_files_single.tar.bz2 -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
-time tar -I pbzip2 -cvf debug_files_parallel.tar.bz2 -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+function parallel_package_with_debug_tbz2() {
+    if ! [[ "$CUSTOM_PACKAGE_FILE_NAME" =~ \.tar\.bz2$ ]] || ! [[ "$CUSTOM_DEBUG_PACKAGE_FILE_NAME" =~ \.tar\.bz2$ ]]; then
+        echo "The file extensions are not .tar.bz2. Exiting."
+        exit 1
+    fi
+
+    echo -e '\n----------------------------'
+    echo '.debug 파일 제외 tar.bz2 압축'
+    echo '----------------------------'
+    time tar --exclude='*.debug' -I pbzip2 -cvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+
+    echo -e '\n----------------------------'
+    echo '.debug 파일만 tar.bz2 압축'
+    echo '----------------------------'
+    time tar -I pbzip2 -cvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+}
+
+function single_package_with_debug_tbz2() {
+    if ! [[ "$CUSTOM_PACKAGE_FILE_NAME" =~ \.tar\.bz2$ ]] || ! [[ "$CUSTOM_DEBUG_PACKAGE_FILE_NAME" =~ \.tar\.bz2$ ]]; then
+        echo "The file extensions are not .tar.bz2. Exiting."
+        exit 1
+    fi
+
+    echo -e '\n----------------------------'
+    echo '.debug 파일 제외 tar.bz2 압축'
+    echo '----------------------------'
+    time tar --exclude='*.debug' -cjvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+    echo -e '\n----------------------------'
+    echo '.debug 파일만 tar.bz2 압축'
+    echo '----------------------------'
+    time tar -cjvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+}
+
+function parallel_package_with_debug_tgz() {
+    if ! [[ "$CUSTOM_PACKAGE_FILE_NAME" =~ \.tar\.gz$ ]] || ! [[ "$CUSTOM_DEBUG_PACKAGE_FILE_NAME" =~ \.tar\.gz$ ]]; then
+        echo "The file extensions are not .tar.gz. Exiting."
+        exit 1
+    fi
+
+    echo -e '\n----------------------------'
+    echo '.debug 파일 제외 tar.gz 압축'
+    echo '----------------------------'
+    time tar --exclude='*.debug' -I pigz -cvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+    echo -e '\n----------------------------'
+    echo '.debug 파일만 tar.gz 압축'
+    echo '----------------------------'
+    time tar -I pigz -cvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+}
+
+function single_package_with_debug_tgz() {
+    if ! [[ "$CUSTOM_PACKAGE_FILE_NAME" =~ \.tar\.gz$ ]] || ! [[ "$CUSTOM_DEBUG_PACKAGE_FILE_NAME" =~ \.tar\.gz$ ]]; then
+        echo "The file extensions are not .tar.gz. Exiting."
+        exit 1
+    fi
+
+    echo -e '\n----------------------------'
+    echo '.debug 파일 제외 tar.gz 압축'
+    echo '----------------------------'
+    time tar --exclude='*.debug' -czvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+    echo -e '\n----------------------------'
+    echo '.debug 파일만 tar.gz 압축'
+    echo '----------------------------'
+    time tar -czvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    if [ $? -ne 0 ]; then
+        echo "tar command failed. Exiting."
+        exit 1
+    fi
+}
+
+parallel_package_with_debug_tbz2
