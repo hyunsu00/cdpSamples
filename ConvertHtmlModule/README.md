@@ -1,6 +1,8 @@
 
 # rockylinux 8.x
 # https://rhel.pkgs.org/8/epel-x86_64/chromium-headless-126.0.6478.182-1.el8.x86_64.rpm.html
+# https://rpmfind.net/linux/RPM/epel/8/x86_64/Packages/c/chromium-headless-127.0.6533.88-2.el8.x86_64.html
+
 # chromium-headless-126.0.6478.182-1.el8.x86_64.rpm
 # /usr/lib64/chromium-browser/ 경로에 위치
 $ sudo dnf install chromium-headless
