@@ -59,3 +59,6 @@ $ sudo apt-get install pigz
 $ sudo yum install pigz
 $ sudo yum install pbzip2
 
+다운로드 경로)
+linux64 : https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.126/linux64/chrome-headless-shell-linux64.zip
+win32 : https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.126/win32/chrome-headless-shell-win32.zip
