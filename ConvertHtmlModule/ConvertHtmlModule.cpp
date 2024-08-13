@@ -60,6 +60,7 @@ class CDPPipe_Windows : public CDPPipe
 {
 public:
     CDPPipe_Windows();
+    CDPPipe_Windows(const std::wstring& chromePath);
     virtual ~CDPPipe_Windows();
 
 public:
@@ -103,7 +104,19 @@ CDPPipe_Windows::CDPPipe_Windows()
 , m_hRead(INVALID_HANDLE_VALUE)
 , m_MessageQueue()
 , m_dwTimeout(INFINITE)
-, m_ChromePath(L".\\chrome\\chrome-headless-shell-win32\\chrome-headless-shell.exe")
+, m_ChromePath()
+{
+}
+
+CDPPipe_Windows::CDPPipe_Windows(
+    const std::wstring& chromePath
+)
+: m_hProcess(INVALID_HANDLE_VALUE)
+, m_hWrite(INVALID_HANDLE_VALUE)
+, m_hRead(INVALID_HANDLE_VALUE)
+, m_MessageQueue()
+, m_dwTimeout(INFINITE)
+, m_ChromePath(chromePath)
 {
 }
 
@@ -437,6 +450,7 @@ class CDPPipe_Linux : public CDPPipe
 {
 public:
     CDPPipe_Linux();
+    CDPPipe_Linux(const std::wstring& chromePath);
     virtual ~CDPPipe_Linux();
 
 public:
@@ -470,10 +484,21 @@ CDPPipe_Linux::CDPPipe_Linux()
 , m_ReadFD(-1)
 , m_MessageQueue()
 , m_Timeout()
-// , m_ChromePath(L"./chrome/chrome-headless-shell-linux64/chrome-headless-shell")
-, m_ChromePath(L"/usr/lib64/chromium-browser/headless_shell")
+, m_ChromePath()
 {
 }
+
+CDPPipe_Linux::CDPPipe_Linux(
+    const hncstd::wstring& chromePath
+)
+: m_PID(-1)
+, m_WriteFD(-1)
+, m_ReadFD(-1)
+, m_MessageQueue()
+, m_Timeout()
+, m_ChromePath(chromePath)
+{
+}   
 
 CDPPipe_Linux::~CDPPipe_Linux()
 {
@@ -726,6 +751,13 @@ const wchar_t* CDPPipe_Linux::GetChromePath() const /*override*/
 class CDPManager
 {
 public:
+    static std::wstring GetChromePath() {
+        return s_ChromePath;
+    }
+    static void SetChromePath(const std::wstring& chromePath) {
+        s_ChromePath = chromePath;
+    }
+public:
     CDPManager();
     ~CDPManager();
 
@@ -794,7 +826,12 @@ private:
 
 private:
     std::unique_ptr<CDPPipe> m_Pipe;
+
+private:
+    static std::wstring s_ChromePath;
 }; // class CDPManager
+
+std::wstring CDPManager::s_ChromePath = hncstd::wstring();
 
 CDPManager::CDPManager()
 : TIMEOUT_SEC(5)
@@ -924,9 +961,9 @@ CDPManager::CDPManager()
 , m_TargetID()
 , m_SessionID()
 #ifdef _WIN32
-, m_Pipe(new CDPPipe_Windows())
+, m_Pipe(new CDPPipe_Windows(s_ChromePath))
 #else // #ifdef _WIN32
-, m_Pipe(new CDPPipe_Linux())
+, m_Pipe(new CDPPipe_Linux(s_ChromePath))
 #endif // !#ifdef _WIN32
 {
 }
@@ -1281,6 +1318,16 @@ void CDPManager::_SaveFile(const std::wstring& resultFilePath, const std::string
 // --------------------------------------------------------------------------------
 // End of CDPManager class
 // --------------------------------------------------------------------------------
+
+std::wstring ConvertHtmlModule::GetChromePath()
+{
+    return CDPManager::GetChromePath();
+}
+
+void ConvertHtmlModule::SetChromePath(const std::wstring& chromePath)
+{
+    CDPManager::SetChromePath(chromePath);
+}
 
 bool ConvertHtmlModule::HtmlToImage(
     const std::wstring& htmlURL,

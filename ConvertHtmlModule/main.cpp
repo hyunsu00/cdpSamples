@@ -221,6 +221,8 @@ int main() {
     }
 
 #if 1
+    ConvertHtmlModule::SetChromePath(L"/usr/lib64/chromium-browser/headless_shell");
+
 #ifdef OS_WIN
     std::wstring htmlURL = L"file://D:/dev/github.com/cdpSamples/ConvertHtmlModule/samples/韓글.html";
 #else // #ifdef OS_WIN

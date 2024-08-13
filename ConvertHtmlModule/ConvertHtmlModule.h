@@ -4,6 +4,9 @@
 class ConvertHtmlModule 
 {
 public:
+    static std::wstring GetChromePath();
+    static void SetChromePath(const std::wstring& chromePath);
+
     static bool HtmlToImage(
         const std::wstring& htmlURL,
         const std::wstring& resultFilePath,
