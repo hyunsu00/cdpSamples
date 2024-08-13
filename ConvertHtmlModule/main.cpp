@@ -1,8 +1,49 @@
-﻿#include <string>
+﻿#include <iostream> // std::cerr
+#include <fstream> // std::ifstream
+#include <map> // std::map
+#include <string> // std::string
 #include "ConvertHtmlModule.h"
 
-#if 0
+std::map<std::string, std::string> readConfFile(const std::string& filename) {
+    // 문자열 앞뒤 공백 제거 함수
+    auto trim = [](const std::string& str) -> std::string {
+        size_t first = str.find_first_not_of(" \t");
+        if (std::string::npos == first) {
+            return str;
+        }
+        size_t last = str.find_last_not_of(" \t");
+        return str.substr(first, (last - first + 1));
+    };
 
+    std::map<std::string, std::string> config;
+    std::ifstream file(filename);
+    
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+            // 주석 및 빈 줄 무시
+            if (line.empty() || line[0] == '#') {
+                continue;
+            }
+            
+            // 키와 값 분리
+            size_t equalPos = line.find('=');
+            if (equalPos != std::string::npos) {
+                std::string key = trim(line.substr(0, equalPos));
+                std::string value = trim(line.substr(equalPos + 1));
+                
+                config[key] = value;
+            }
+        }
+        file.close();
+    } else {
+        std::cerr << "파일을 열 수 없습니다: " << filename << std::endl;
+    }
+    
+    return config;
+}
+
+#if 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -161,6 +202,23 @@ json _wait_for_page_load(int fd)
 #endif
 
 int main() {
+
+    std::string filename = "./hdv.conf";
+    auto config = readConfFile(filename);
+    
+    if (config.empty()) {
+        std::cout << "설정 파일이 비어있거나 읽을 수 없습니다." << std::endl;
+    } else {
+        std::cout << "설정 파일 내용:" << std::endl;
+        std::cout << std::string(40, '-') << std::endl;
+        
+        for (const auto& pair : config) {
+            std::cout << pair.first << " = " << pair.second << std::endl;
+        }
+        
+        std::cout << std::string(40, '-') << std::endl;
+        std::cout << "총 " << config.size() << "개의 설정이 로드되었습니다." << std::endl;
+    }
 
 #if 1
 #ifdef OS_WIN

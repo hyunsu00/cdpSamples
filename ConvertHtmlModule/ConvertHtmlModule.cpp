@@ -470,7 +470,8 @@ CDPPipe_Linux::CDPPipe_Linux()
 , m_ReadFD(-1)
 , m_MessageQueue()
 , m_Timeout()
-, m_ChromePath(L"./chrome/chrome-headless-shell-linux64/chrome-headless-shell")
+// , m_ChromePath(L"./chrome/chrome-headless-shell-linux64/chrome-headless-shell")
+, m_ChromePath(L"/usr/lib64/chromium-browser/headless_shell")
 {
 }
 
