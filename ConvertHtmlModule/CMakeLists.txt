@@ -163,7 +163,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   message(STATUS "CUSTOM_DESTDIR_PATH: ${CUSTOM_DESTDIR_PATH}")
   message(STATUS "CUSTOM_PACKAGE_INSTALL_PATH: ${CUSTOM_PACKAGE_INSTALL_PATH}")
 
-  add_custom_target(package_with_debug_single
+  # ``` bash
+  # make package_with_debug
+  # ```
+  add_custom_target(package_with_debug
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CUSTOM_PACKAGE_PATH}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CUSTOM_PACKAGE_PATH}
     # DESTDIR 설치 디렉토릴를 지정하여 설치
@@ -173,9 +176,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     COMMAND mv ${CUSTOM_DESTDIR_PATH}${CMAKE_INSTALL_PREFIX}/* "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
     COMMAND rm -rf "${CUSTOM_DESTDIR_PATH}"
     # *.debug 파일 제외 압축
-    COMMAND bash -c '
-      time tar --exclude='*.debug' -cjvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" -C "${CUSTOM_PACKAGE_INSTALL_PATH}" .
-    '
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CUSTOM_PACKAGE_INSTALL_PATH}
+            bash -c 'time tar --exclude='*.debug' -cjvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" *'
     # *.debug 파일만 압축
     COMMAND bash -c '
       find ${CUSTOM_PACKAGE_INSTALL_PATH} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CUSTOM_PACKAGE_INSTALL_PATH}/||\" > "debug_file_list.txt"
@@ -186,7 +188,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
-  add_custom_target(package_with_debug_parallel
+  # ``` bash
+  # make parallel_package_with_debug
+  # ``
+  add_custom_target(parallel_package_with_debug
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CUSTOM_PACKAGE_PATH}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CUSTOM_PACKAGE_PATH}
     # DESTDIR 설치 디렉토릴를 지정하여 설치
@@ -196,9 +201,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     COMMAND mv ${CUSTOM_DESTDIR_PATH}${CMAKE_INSTALL_PREFIX}/* "${CUSTOM_PACKAGE_INSTALL_PATH}/${CUSTOM_PACKAGE_DIR_NAME}"
     COMMAND rm -rf "${CUSTOM_DESTDIR_PATH}"
     # *.debug 파일 제외 압축
-    COMMAND bash -c '
-      time tar --exclude='*.debug' -I pbzip2 -cvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" -C "${CUSTOM_PACKAGE_INSTALL_PATH}" .
-    '
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CUSTOM_PACKAGE_INSTALL_PATH}
+            bash -c 'time tar --exclude='*.debug' -I pbzip2 -cvf "${CMAKE_CURRENT_BINARY_DIR}/${CUSTOM_PACKAGE_FILE_NAME}" *'
     # *.debug 파일만 압축
     COMMAND bash -c '
       find ${CUSTOM_PACKAGE_INSTALL_PATH} -name "*.debug" -print0 | xargs -0 -I {} echo {} | sed \"s|^\\${CUSTOM_PACKAGE_INSTALL_PATH}/||\" > "debug_file_list.txt"
@@ -208,7 +212,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     '
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   )
+
+  # cmake/package_with_debug.sh.in 파일을 package_with_debug.sh로 복사
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/package_with_debug.sh.in package_with_debug.sh @ONLY)
 endif() # if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-# cmake/package_with_debug.sh.in 파일을 package_with_debug.sh로 복사
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/package_with_debug.sh.in package_with_debug.sh @ONLY)

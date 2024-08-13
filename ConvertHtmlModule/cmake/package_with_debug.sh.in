@@ -7,6 +7,7 @@ CUSTOM_PACKAGE_DIR_NAME="@CUSTOM_PACKAGE_DIR_NAME@"
 CUSTOM_PACKAGE_PATH="@CUSTOM_PACKAGE_PATH@"
 CUSTOM_DESTDIR_PATH="@CUSTOM_DESTDIR_PATH@"
 CUSTOM_PACKAGE_INSTALL_PATH="@CUSTOM_PACKAGE_INSTALL_PATH@"
+CMAKE_CURRENT_BINARY_DIR="@CMAKE_CURRENT_BINARY_DIR@"
 CMAKE_INSTALL_PREFIX="@CMAKE_INSTALL_PREFIX@"
 
 if [ -z "${CUSTOM_PACKAGE_FILE_NAME}" ] ||
@@ -15,6 +16,7 @@ if [ -z "${CUSTOM_PACKAGE_FILE_NAME}" ] ||
     [ -z "${CUSTOM_PACKAGE_PATH}" ] ||
     [ -z "${CUSTOM_DESTDIR_PATH}" ] ||
     [ -z "${CUSTOM_PACKAGE_INSTALL_PATH}" ] ||
+    [ -z "${CMAKE_CURRENT_BINARY_DIR}" ] ||
     [ -z "${CMAKE_INSTALL_PREFIX}" ]; then
     echo "One or more required variables are not set. Exiting."
     exit 1
@@ -55,7 +57,7 @@ function parallel_package_with_debug_tbz2() {
     echo -e '\n----------------------------'
     echo '.debug 파일 제외 tar.bz2 압축'
     echo '----------------------------'
-    time tar --exclude='*.debug' -I pbzip2 -cvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    (cd $CUSTOM_PACKAGE_INSTALL_PATH && time tar --exclude='*.debug' -I pbzip2 -cvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_PACKAGE_FILE_NAME *)
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -64,7 +66,7 @@ function parallel_package_with_debug_tbz2() {
     echo -e '\n----------------------------'
     echo '.debug 파일만 tar.bz2 압축'
     echo '----------------------------'
-    time tar -I pbzip2 -cvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    time tar -I pbzip2 -cvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -80,7 +82,7 @@ function single_package_with_debug_tbz2() {
     echo -e '\n----------------------------'
     echo '.debug 파일 제외 tar.bz2 압축'
     echo '----------------------------'
-    time tar --exclude='*.debug' -cjvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    (cd $CUSTOM_PACKAGE_INSTALL_PATH && time tar --exclude='*.debug' -cjvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_PACKAGE_FILE_NAME *)
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -88,7 +90,7 @@ function single_package_with_debug_tbz2() {
     echo -e '\n----------------------------'
     echo '.debug 파일만 tar.bz2 압축'
     echo '----------------------------'
-    time tar -cjvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    time tar -cjvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -104,7 +106,8 @@ function parallel_package_with_debug_tgz() {
     echo -e '\n----------------------------'
     echo '.debug 파일 제외 tar.gz 압축'
     echo '----------------------------'
-    time tar --exclude='*.debug' -I pigz -cvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    time tar --exclude='*.debug' -I pigz -cvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    (cd $CUSTOM_PACKAGE_INSTALL_PATH && time tar --exclude='*.debug' -I pigz -cvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_PACKAGE_FILE_NAME *)
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -112,7 +115,7 @@ function parallel_package_with_debug_tgz() {
     echo -e '\n----------------------------'
     echo '.debug 파일만 tar.gz 압축'
     echo '----------------------------'
-    time tar -I pigz -cvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    time tar -I pigz -cvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -128,7 +131,7 @@ function single_package_with_debug_tgz() {
     echo -e '\n----------------------------'
     echo '.debug 파일 제외 tar.gz 압축'
     echo '----------------------------'
-    time tar --exclude='*.debug' -czvf $CUSTOM_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH .
+    (cd $CUSTOM_PACKAGE_INSTALL_PATH && time tar --exclude='*.debug' -czvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_PACKAGE_FILE_NAME *)
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
@@ -136,7 +139,7 @@ function single_package_with_debug_tgz() {
     echo -e '\n----------------------------'
     echo '.debug 파일만 tar.gz 압축'
     echo '----------------------------'
-    time tar -czvf $CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
+    time tar -czvf $CMAKE_CURRENT_BINARY_DIR/$CUSTOM_DEBUG_PACKAGE_FILE_NAME -C $CUSTOM_PACKAGE_INSTALL_PATH -T $DEBUG_FILE_LIST
     if [ $? -ne 0 ]; then
         echo "tar command failed. Exiting."
         exit 1
