@@ -228,7 +228,7 @@ int main() {
 #else // #ifdef OS_WIN
     std::wstring htmlURL = L"file:///home/hyunsu00/github/hyunsu00/cdpSamples/ConvertHtmlModule/samples/韓글.html";
 #endif // !#ifdef OS_WIN
-    std::wstring htmlURL2 = L"https://www.naver.com";
+    std::wstring htmlURL2 = L"https://www.google.com";
     ConvertHtmlModule::HtmlToImage(
         htmlURL2.c_str(),
         L"HtmlToImage.png",
