@@ -560,8 +560,8 @@ bool CDPPipe_Linux::Launch() /*override*/
             const char* exePath = dirname(szAppPath);
             chromePath = hncstd::string(exePath) + "/" + chromePath;
         }
+        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
-        // int ret = execlp("/opt/google/chrome/chrome", "/opt/google/chrome/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", "--headless", NULL);
         // int ret = execlp("./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "./chrome/chrome-headless-shell-linux64/chrome-headless-shell", "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         // int ret = execl("/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "/home/hyunsu00/dev/chromium/src/out/Debug/chrome", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
         int ret = execlp(chromePath.c_str(), chromePath.c_str(), "--headless", "--no-sandbox", "--disable-gpu", "--remote-debugging-pipe", NULL);
