@@ -226,9 +226,10 @@ int main() {
 #ifdef OS_WIN
     std::wstring htmlURL = L"file://D:/dev/github.com/cdpSamples/ConvertHtmlModule/samples/韓글.html";
 #else // #ifdef OS_WIN
-    std::wstring htmlURL = L"file:///home/hyunsu00/github/hyunsu00/cdpSamples/ConvertHtmlModule/samples/韓글.html";
+    // std::wstring htmlURL = L"file:///home/hyunsu00/github/hyunsu00/cdpSamples/ConvertHtmlModule/samples/韓글.html";
+    std::wstring htmlURL = L"file:///home/hyunsu00/hancom/dev/github.com/cdpSamples/ConvertHtmlModule/samples/sample.html";
 #endif // !#ifdef OS_WIN
-    std::wstring htmlURL2 = L"https://www.google.com";
+    std::wstring htmlURL2 = L"https://www.naver.com";
     ConvertHtmlModule::HtmlToImage(
         htmlURL2.c_str(),
         L"HtmlToImage.png",

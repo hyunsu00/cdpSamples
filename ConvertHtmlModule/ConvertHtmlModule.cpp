@@ -1118,7 +1118,11 @@ bool CDPManager::Navegate(
     if (!result) {
         return false;
     }
-
+    jmessage = _Wait(m_ID);
+    if (jmessage.empty() || jmessage.contains("error")) {
+        return false;
+    }
+    
     // 페이지 로드
     result = m_Pipe->Write(_Format(Page_navigate, ++m_ID, Converter::W2UTF8(url).c_str(), sessionId.c_str()));
     if (!result) {
